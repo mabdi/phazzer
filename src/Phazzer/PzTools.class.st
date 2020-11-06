@@ -15,6 +15,22 @@ PzTools class >> instanceId [
 ]
 
 { #category : #'as yet unclassified' }
+PzTools >> buildFinalTestClassWith: aCollection using: testClass [
+	| finalClass |
+	finalClass := testClass
+		subclass: (testClass name asString , self getId asString) asSymbol
+		instanceVariableNames: ''
+		classVariableNames: ''
+		package: self defaultFinalPackage.
+	aCollection
+		do: [ :item | 
+			| ast |
+			ast := self parsedMethodFrom: item.
+			finalClass compile: ast formattedCode ].
+	^ finalClass
+]
+
+{ #category : #'as yet unclassified' }
 PzTools >> buildTestClassWith: aCollection using: testClass [
 	| tempClass |
 	tempClass := testClass
@@ -49,6 +65,11 @@ PzTools >> clearTempClasses [
 		do: [ :item | item removeFromSystem ]
 		displayingProgress: 'Clear temp classes.'
 
+]
+
+{ #category : #'as yet unclassified' }
+PzTools >> defaultFinalPackage [ 
+	^ 'PhazzerFinalClasses'
 ]
 
 { #category : #'as yet unclassified' }

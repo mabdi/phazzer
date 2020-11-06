@@ -32,8 +32,9 @@ Phazzer >> config: aConfig [
 
 { #category : #'as yet unclassified' }
 Phazzer >> fuzzMethod: aTestMethod [
-	| ts tc |
-	ts := self inputAmplify: aTestMethod.
+	| ts tc t |
+	t := self removeAssertions: aTestMethod.
+	ts := self inputAmplify: t.
 	tc := self install: ts base: aTestMethod methodClass.
 	self run: tc.
 	PzTools new clearTempClasses
@@ -58,11 +59,18 @@ Phazzer >> install: testMethods base: aTestClass [
 ]
 
 { #category : #'as yet unclassified' }
+Phazzer >> removeAssertions: aTestMethod [
+	^ PzAssertTransform
+		transformAllAsserts: (self tools parsedMethodFrom: aTestMethod)
+]
+
+{ #category : #'as yet unclassified' }
 Phazzer >> run: testClasses [
 	| tr |
-	tr := testClasses collect: [ :cls | cls buildSuite run defects ].
+	tr := testClasses collect: [ :cls | cls -> cls buildSuite run defects ].
 	"move to final package"
-	self halt.
+	tr collect: [:cls | self tools buildFinalTestClassWith: (cls value collect: [:tc | (tc class lookupSelector: tc selector) sourceCode]) using:  cls key superclass].
+	
 ]
 
 { #category : #accessing }
