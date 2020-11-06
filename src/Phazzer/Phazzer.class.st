@@ -31,6 +31,22 @@ Phazzer >> config: aConfig [
 ]
 
 { #category : #'as yet unclassified' }
+Phazzer >> eventForTestAnnouncement [
+	| str |
+	^ [ :x | 
+	str := ':'
+		join:
+			{Time nowUTC print24.
+			x test class name.
+			x test selector}.
+	Stdio stdout
+		nextPutAll: str;
+		lf;
+		flush
+		 ]
+]
+
+{ #category : #'as yet unclassified' }
 Phazzer >> fuzzMethod: aTestMethod [
 	| ts tc t |
 	.
@@ -66,12 +82,15 @@ Phazzer >> removeAssertions: aTestMethod [
 
 { #category : #'as yet unclassified' }
 Phazzer >> run: testClasses [
-	| tr |
+	| tr ts |
 	tr := testClasses
-		collect: [ :cls | cls -> cls buildSuite run defects ].
+		collect: [ :cls | 
+			ts := cls buildSuite.
+			ts when: TestAnnouncement do: self eventForTestAnnouncement.
+			ts := ts run.
+			cls -> ts defects ].
 	(tr reject: [ :cls | cls value isEmpty ])
 		do: [ :cls | 
-			
 			self tools
 				buildFinalTestClassWith:
 					(cls value

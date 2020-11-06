@@ -38,13 +38,13 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 		instanceVariableNames: ''
 		classVariableNames: ''
 		package: self defaultTempPackage.
-	tempClass class
+	"tempClass class
 		pzCompile:
 			'allTestSelectors
 		| answer |
 		answer := Set withAll: self testSelectors.
 		answer addAll: self superclass allTestSelectors.
-		^ answer asSortedCollection asOrderedCollection'.
+		^ answer asSortedCollection asOrderedCollection'."
 	tempClass class
 		pzCompile:
 			'defaultTimeLimit
