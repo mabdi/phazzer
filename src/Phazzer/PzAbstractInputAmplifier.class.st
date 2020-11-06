@@ -3,7 +3,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'config',
-		'testMethod'
+		'testMethod',
+		'aMethodAST'
 	],
 	#category : #Phazzer
 }
@@ -23,8 +24,9 @@ PzAbstractInputAmplifier >> amplifyInputs [
 PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
 	| versions |
 	testMethod := aTestMethod.
+	aMethodAST := self tool parsedMethodFrom:  testMethod.
 	[ versions := self amplifyInputs.
-	^ self rename:versions ]
+	^ self rename: versions ]
 		on: Error
 		do: [ :x | 
 			config debug
@@ -52,11 +54,12 @@ PzAbstractInputAmplifier >> rename: versions [
 ]
 
 { #category : #'change set' }
-PzAbstractInputAmplifier >> renameMethodName: ast append: aText [
+PzAbstractInputAmplifier >> renameMethodName: anAst append: aText [
 	| first |
-	first := (ast selector splitOn: $:) at: 1.
-	ast selector: ((ast selector splitOn: $:) at: 1 put: first , aText).
-	^ ast
+	first := (anAst selector splitOn: $:) at: 1.
+	anAst
+		selector: ((anAst selector splitOn: $:) at: 1 put: first , aText).
+	^ anAst
 ]
 
 { #category : #'change set' }

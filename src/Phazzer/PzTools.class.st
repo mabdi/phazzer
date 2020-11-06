@@ -60,6 +60,13 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 ]
 
 { #category : #'as yet unclassified' }
+PzTools >> clearFinalClasses [
+	(self defaultFinalPackage asPackageIfAbsent: [ ^ true ]) classes
+		do: [ :item | item removeFromSystem ]
+		displayingProgress: 'Clear final classes.'
+]
+
+{ #category : #'as yet unclassified' }
 PzTools >> clearTempClasses [ 
 	(self defaultTempPackage asPackageIfAbsent: [ ^ true ]) classes
 		do: [ :item | item removeFromSystem ]

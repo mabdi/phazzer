@@ -6,8 +6,7 @@ Class {
 
 { #category : #removing }
 PzRotateLiteralsInputAmplifier >> amplifyInputs [
-	| aMethodAST results literals |
-	aMethodAST :=  testMethod ast.
+	| results literals |
 	literals := self getAllLiterals: aMethodAST.
 	results := OrderedCollection new.
 	literals

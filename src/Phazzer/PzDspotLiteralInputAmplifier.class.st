@@ -2,8 +2,7 @@ Class {
 	#name : #PzDspotLiteralInputAmplifier,
 	#superclass : #PzAbstractInputAmplifier,
 	#instVars : [
-		'mappings',
-		'aMethodAST'
+		'mappings'
 	],
 	#category : #Phazzer
 }
@@ -32,7 +31,6 @@ PzDspotLiteralInputAmplifier >> amplifyBooleans [
 PzDspotLiteralInputAmplifier >> amplifyInputs [
 	| results |
 	mappings := OrderedCollection new.
-	aMethodAST := testMethod ast.
 	self amplifyNumbers.
 	self amplifyStrings.
 	self amplifyBooleans.

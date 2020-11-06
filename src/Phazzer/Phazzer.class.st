@@ -33,6 +33,7 @@ Phazzer >> config: aConfig [
 { #category : #'as yet unclassified' }
 Phazzer >> fuzzMethod: aTestMethod [
 	| ts tc t |
+	.
 	t := self removeAssertions: aTestMethod.
 	ts := self inputAmplify: t.
 	tc := self install: ts base: aTestMethod methodClass.
@@ -60,17 +61,22 @@ Phazzer >> install: testMethods base: aTestClass [
 
 { #category : #'as yet unclassified' }
 Phazzer >> removeAssertions: aTestMethod [
-	^ PzAssertTransform
-		transformAllAsserts: (self tools parsedMethodFrom: aTestMethod)
+	^ (PzAssertTransform transformAllAsserts: aTestMethod ast) formattedCode 
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> run: testClasses [
 	| tr |
-	tr := testClasses collect: [ :cls | cls -> cls buildSuite run defects ].
-	"move to final package"
-	tr collect: [:cls | self tools buildFinalTestClassWith: (cls value collect: [:tc | (tc class lookupSelector: tc selector) sourceCode]) using:  cls key superclass].
-	
+	tr := testClasses
+		collect: [ :cls | cls -> cls buildSuite run defects ].
+	(tr reject: [ :cls | cls value isEmpty ])
+		do: [ :cls | 
+			
+			self tools
+				buildFinalTestClassWith:
+					(cls value
+						collect: [ :tc | (tc class lookupSelector: tc selector) sourceCode ])
+				using: cls key superclass ]
 ]
 
 { #category : #accessing }
