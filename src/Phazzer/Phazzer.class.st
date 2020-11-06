@@ -48,12 +48,12 @@ Phazzer >> eventForTestAnnouncement [
 
 { #category : #'as yet unclassified' }
 Phazzer >> fuzzMethod: aTestMethod [
-	| ts tc t |
-	.
+	| tr ts tc t |
 	t := self removeAssertions: aTestMethod.
 	ts := self inputAmplify: t.
 	tc := self install: ts base: aTestMethod methodClass.
-	self run: tc.
+	tr := self run: tc.
+	"self keepFailingTests: tr."
 	PzTools new clearTempClasses
 ]
 
@@ -76,19 +76,7 @@ Phazzer >> install: testMethods base: aTestClass [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> removeAssertions: aTestMethod [
-	^ (PzAssertTransform transformAllAsserts: aTestMethod ast) formattedCode 
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> run: testClasses [
-	| tr ts |
-	tr := testClasses
-		collect: [ :cls | 
-			ts := cls buildSuite.
-			ts when: TestAnnouncement do: self eventForTestAnnouncement.
-			ts := ts run.
-			cls -> ts defects ].
+Phazzer >> keepFailingTests: tr [
 	(tr reject: [ :cls | cls value isEmpty ])
 		do: [ :cls | 
 			self tools
@@ -96,6 +84,23 @@ Phazzer >> run: testClasses [
 					(cls value
 						collect: [ :tc | (tc class lookupSelector: tc selector) sourceCode ])
 				using: cls key superclass ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> removeAssertions: aTestMethod [
+	^ (PzAssertTransform transformAllAsserts: aTestMethod ast) formattedCode 
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> run: testClasses [
+	| ts |
+	^ testClasses
+		collect: [ :cls | 
+			ts := cls buildSuite.
+			ts when: TestAnnouncement do: self eventForTestAnnouncement.
+			ts := ts run.
+			cls -> ts defects ].
+	
 ]
 
 { #category : #accessing }
