@@ -99,13 +99,14 @@ Phazzer >> removeAssertions: aTestMethod [
 { #category : #'as yet unclassified' }
 Phazzer >> run: testClasses [
 	| ts |
-	^ testClasses
+	^ (testClasses
 		collect: [ :cls | 
 			ts := cls buildSuite.
 			ts when: TestAnnouncement do: self eventForTestAnnouncement.
-			ts := ts run.
-			cls -> ts defects ].
-	
+			[ ts := ts run.
+			cls -> ts defects ]
+				on: Exception
+				do: [ :x | x isResumable ifTrue: [ x resume ]. nil ] ]) reject: #isNil
 ]
 
 { #category : #accessing }
