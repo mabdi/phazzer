@@ -21,6 +21,11 @@ Phazzer class >> onMethod: aTestMethod [
 ]
 
 { #category : #'as yet unclassified' }
+Phazzer class >> phazzImage [
+	RPackage organizer packages do:  #phazz displayingProgress:  'Phazzing all image'
+]
+
+{ #category : #'as yet unclassified' }
 Phazzer class >> phazzPackage: packageName [
 	(RPackage organizer packageNamed: packageName) phazz
 ]
