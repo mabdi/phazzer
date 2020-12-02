@@ -93,3 +93,8 @@ PzTools >> getId [
 PzTools >> parsedMethodFrom: aSourceCode [
 	^ RBParser parseMethod: aSourceCode
 ]
+
+{ #category : #removing }
+PzTools >> removeSelector: selector inClass: className [
+	(self class environment at: className) removeSelector: selector 
+]

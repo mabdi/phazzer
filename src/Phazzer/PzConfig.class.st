@@ -3,7 +3,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'amps',
-		'debug'
+		'debug',
+		'freezeTimeOut'
 	],
 	#category : #Phazzer
 }
@@ -30,6 +31,17 @@ PzConfig >> debug: boolean [
 
 { #category : #accessing }
 PzConfig >> defaultValues: key [
-	^ { #amps -> (PzAbstractInputAmplifier subclasses).
-	(#debug -> true) } asDictionary at: key
+	^ {(#amps -> PzAbstractInputAmplifier subclasses).
+	(#freezeTimeOut -> 5).
+	(#debug -> true)} asDictionary at: key
+]
+
+{ #category : #accessing }
+PzConfig >> freezeTimeOut [
+	^ freezeTimeOut ifNil: [ self defaultValues: #freezeTimeOut ]
+]
+
+{ #category : #accessing }
+PzConfig >> freezeTimeOut: anObject [
+	freezeTimeOut := anObject
 ]
