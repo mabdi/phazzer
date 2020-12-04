@@ -22,11 +22,14 @@ Phazzer >> config: aConfig [
 
 { #category : #'as yet unclassified' }
 Phazzer >> continueCondition [
-	| lastLine time |
+	| fileContent lastLine time |
 	self sandBoxedSharedfileName exists
 		ifFalse: [ ^ false ].
-	lastLine := (self sandBoxedSharedfileName contents splitOn: String cr)
-		last.
+	fileContent := self sandBoxedSharedfileName contents
+		splitOn: String cr.
+	fileContent size < 2
+		ifTrue: [ ^ false ].
+	lastLine := fileContent at: fileContent size - 1.
 	time := Time fromString: ((lastLine splitOn: ',') at: 1).
 	^ (Time now subtractTime: time) asSeconds > config freezeTimeOut
 ]
@@ -40,8 +43,8 @@ Phazzer >> eventForTestAnnouncement [
 			{Time nowUTC print24.
 			x test class name.
 			x test selector}.
-	(FileLocator imageDirectory / config sandBoxedSharedfileName)
-		writeStream
+	self sandBoxedSharedfileName writeStream
+		setToEnd;
 		nextPutAll: str;
 		cr;
 		close ]
@@ -127,12 +130,11 @@ Phazzer >> removeAssertions: aTestMethod [
 { #category : #'as yet unclassified' }
 Phazzer >> removeFinishedTests [
 	| line |
-	^ [ (FileLocator imageDirectory / config sandBoxedSharedfileName)
-		asFileReference contents
+	self sandBoxedSharedfileName contents
 		splitOn: String cr
 		do: [ :x | 
 			line := x splitOn: ','.
-			self tools removeSelector: (line at: 3) inClass: (line at: 2) ] ]
+			self tools removeSelector: (line at: 3) inClass: (line at: 2) ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -150,15 +152,14 @@ Phazzer >> runAllInstalled [
 	testClasses
 		do: [ :cls | 
 			ts := cls buildSuite.
-			ts
-				when: TestAnnouncement
-				do: self eventForTestAnnouncement.
+			ts when: TestAnnouncement do: self eventForTestAnnouncement.
 			[ ts := ts run ]
 				on: Exception
 				do: [ :x | 
 					x isResumable
 						ifTrue: [ x resume ].
 					nil ] ]
+		displayingProgress: 'Test classes'
 ]
 
 { #category : #'as yet unclassified' }
@@ -206,13 +207,20 @@ Phazzer >> sandboxOnFinishOrCrash [
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxStartCommand [
-	process := OSSUnixSubprocess new
+	[ process := OSSUnixSubprocess new
 		command: FileLocator vmBinary pathString;
 		arguments:
 			{'--headless'.
-			sandbox_image, '.image'.
+			(sandbox_image , '.image').
 			PzCommandLineHandler commandName.
-			'--run'}
+			'--run'} ].
+	process := OSSUnixSubprocess new
+		command: FileLocator vmBinary pathString;
+		arguments:
+			{(sandbox_image , '.image').
+			PzCommandLineHandler commandName.
+			'--run'};
+		runAndWait
 ]
 
 { #category : #'as yet unclassified' }
