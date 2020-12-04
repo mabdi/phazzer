@@ -23,9 +23,10 @@ Phazzer >> config: aConfig [
 { #category : #'as yet unclassified' }
 Phazzer >> continueCondition [
 	| lastLine time |
-	lastLine := ((FileLocator imageDirectory
-		/ config sandBoxedSharedfileName) asFileReference contents
-		splitOn: String cr) last.
+	self sandBoxedSharedfileName exists
+		ifFalse: [ ^ false ].
+	lastLine := (self sandBoxedSharedfileName contents splitOn: String cr)
+		last.
 	time := Time fromString: ((lastLine splitOn: ',') at: 1).
 	^ (Time now subtractTime: time) asSeconds > config freezeTimeOut
 ]
@@ -52,10 +53,14 @@ Phazzer >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> inputAmplify: aTestMethod [
-	
-	^ config amps
-		flatCollect: [ :amp | (amp initializeWith: config) inputAmplify: aTestMethod ]
+Phazzer >> inputAmplify: aTestMethod selector: selector [
+	| res |
+	res := OrderedCollection new.
+	config amps
+		do:
+			[ :amp | res addAll: ((amp initializeWith: config) inputAmplify: aTestMethod) ]
+		displayingProgress: 'Input Amplifying: ' , selector.
+	^ res
 ]
 
 { #category : #'as yet unclassified' }
@@ -93,8 +98,9 @@ Phazzer >> phazzPackage: package [
 
 { #category : #'as yet unclassified' }
 Phazzer >> processPackage: package [
-	 (package definedClasses select: [ :cls | cls isTestCase ])
+	(package definedClasses select: [ :cls | cls isTestCase ])
 		do: [ :cls | self processTestClass: cls ]
+		displayingProgress: 'Package ', package name
 ]
 
 { #category : #'as yet unclassified' }
@@ -102,14 +108,15 @@ Phazzer >> processTestClass: aTestClass [
 	aTestClass allTestSelectors
 		do:
 			[ :selector | self processTestMethod: (aTestClass lookupSelector: selector) ]
+				displayingProgress: 'Class ' , aTestClass name
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> processTestMethod: aTestMethod [
 	| t ts |
 	t := self removeAssertions: aTestMethod.
-	ts := self inputAmplify: t.
-	self install: ts base: aTestMethod methodClass.
+	ts := self inputAmplify: t selector: aTestMethod selector.
+	self install: ts base: aTestMethod methodClass
 ]
 
 { #category : #'as yet unclassified' }
@@ -171,15 +178,21 @@ Phazzer >> runSandboxedWithPriority: priority [
 	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
 	FileLocator image pathString = sandbox_image
 		ifTrue: [ ^ self ].
-	(FileLocator imageDirectory / config sandBoxedSharedfileName) exists
+	self sandBoxedSharedfileName exists
 		ifTrue:
-			[ (FileLocator imageDirectory / config sandBoxedSharedfileName) delete ].
+			[ self sandBoxedSharedfileName delete ].
 	Smalltalk backupTo: sandbox_image.
 	block := [ self
-		startSandboxAndWatchOnFinish: self sandboxOnFinishOrCrash  ].
+		startSandboxAndWatchOnFinish: self sandboxOnFinishOrCrash ].
 	FileLocator image pathString = master_image
 		ifTrue:
 			[ priority ifNil: [ block value ] ifNotNil: [ block forkAt: priority ] ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandBoxedSharedfileName [
+	^ (FileLocator imageDirectory
+		/ config sandBoxedSharedfileName) asFileReference
 ]
 
 { #category : #'as yet unclassified' }
@@ -226,7 +239,7 @@ Phazzer >> startSandboxAndWatchOnFinish: aBlock [
 		whileTrue: [ self continueCondition
 				ifTrue: [ executor ifNotNil: [ executor signalException: Error new ].
 					goOn := false ]
-				ifFalse: [ delay wait ] ] ] newProcess.
+				ifFalse: [ delay := config freezeTimeOut seconds asDelay..delay wait ] ] ] newProcess.
 	watcher priority: executor priority + 1.
 	watcher resume.
 	executor resume.

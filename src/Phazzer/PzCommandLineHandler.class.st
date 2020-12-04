@@ -19,7 +19,16 @@ PzCommandLineHandler >> activate [
 	self activateHelp
 		ifTrue: [ ^ self ].
 	(self hasOption: 'run')
-		ifTrue: [ 
+		ifTrue: [ self flagExecuted.
 			Phazzer runAllInstalled.
+			
 			Smalltalk snapshot: false andQuit: true ]
+]
+
+{ #category : #activation }
+PzCommandLineHandler >> flagExecuted [
+		(FileLocator imageDirectory / 'sandbox-child.txt') writeStream
+		nextPutAll: 'executed cmdHandler';
+		cr;
+		close.
 ]
