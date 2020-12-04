@@ -3,12 +3,10 @@ Extension { #name : #RPackage }
 { #category : #'*Phazzer' }
 RPackage >> phazz [
 	self name = PzTools new defaultTempPackage
-		ifTrue: [ ^ self ].
+		ifTrue: [ ^ self error: 'I cannot fuzz myself' ].
 	self name = PzTools new defaultFinalPackage
-		ifTrue: [ ^ self ].
+		ifTrue: [ ^ self error: 'I cannot fuzz myself' ].
 	self name = Phazzer package name
-		ifTrue: [ ^ self ].
-	(self definedClasses select: [ :cls | cls isTestCase ])
-		do: [ :cls | cls phazz ]
-		displayingProgress: 'Phazzing Package: ' , self name
+		ifTrue: [ ^ self error: 'I cannot fuzz myself' ].
+	Phazzer new phazzPackage: self
 ]

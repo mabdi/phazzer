@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'amps',
 		'debug',
-		'freezeTimeOut'
+		'freezeTimeOut',
+		'sandbox'
 	],
 	#category : #Phazzer
 }
@@ -33,6 +34,7 @@ PzConfig >> debug: boolean [
 PzConfig >> defaultValues: key [
 	^ {(#amps -> PzAbstractInputAmplifier subclasses).
 	(#freezeTimeOut -> 5).
+	(#sandbox -> true).
 	(#debug -> true)} asDictionary at: key
 ]
 
@@ -44,4 +46,19 @@ PzConfig >> freezeTimeOut [
 { #category : #accessing }
 PzConfig >> freezeTimeOut: anObject [
 	freezeTimeOut := anObject
+]
+
+{ #category : #'as yet unclassified' }
+PzConfig >> sandBoxedSharedfileName [
+	^ 'sandbox-done-tests.txt'
+]
+
+{ #category : #accessing }
+PzConfig >> sandbox [
+	^ sandbox ifNil: [ self defaultValues: #sandbox ]
+]
+
+{ #category : #accessing }
+PzConfig >> sandbox: anObject [
+	sandbox := anObject
 ]
