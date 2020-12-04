@@ -2,7 +2,8 @@ Class {
 	#name : #Phazzer,
 	#superclass : #Object,
 	#instVars : [
-		'config'
+		'config',
+		'process'
 	],
 	#category : #Phazzer
 }
@@ -183,19 +184,12 @@ Phazzer >> runAllInstalled [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runCommand [
-	| cmd |
-	cmd := String
-		streamContents: [ :stream | 
-			stream
-				nextPutAll: FileLocator vmBinary pathString;
-				nextPutAll: ' ';
-				nextPutAll: FileLocator image pathString;
-				nextPutAll: ' ';
-				nextPutAll: PzCommandLineHandler commandName;
-				nextPutAll: ' ';
-				nextPutAll: '--run' ].
-	OSPlatform current resultOfCommand: cmd.
-	
+	process := OSSUnixSubprocess new
+		command: FileLocator vmBinary pathString;
+		arguments:
+			{FileLocator image pathString.
+			PzCommandLineHandler commandName.
+			'--run'}
 ]
 
 { #category : #'as yet unclassified' }
@@ -229,6 +223,14 @@ Phazzer >> runCommandAndWatchOnFinish: aBlock [
 Phazzer >> runInsideASandbox [
 	(FileLocator imageDirectory / self sandBoxedSharedfileName) exists
 		ifTrue: [ (FileLocator imageDirectory / self sandBoxedSharedfileName) delete ].
+	self runCommandAndWatchOnFinish: self removeFinishedTests 
+		
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runInsideASandboxNonUI [
+	(FileLocator imageDirectory / self sandBoxedSharedfileName) exists
+		ifTrue: [ (FileLocator imageDirectory / self sandBoxedSharedfileName) delete ].
 	[ self runCommandAndWatchOnFinish: self removeFinishedTests ]
 		forkAt: Processor activePriority - 1
 ]
@@ -240,6 +242,7 @@ Phazzer >> sandBoxedSharedfileName [
 
 { #category : #'as yet unclassified' }
 Phazzer >> stopCommand [
+	process sigterm 
 ]
 
 { #category : #accessing }
