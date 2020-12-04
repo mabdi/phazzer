@@ -96,5 +96,5 @@ PzTools >> parsedMethodFrom: aSourceCode [
 
 { #category : #removing }
 PzTools >> removeSelector: selector inClass: className [
-	(self class environment at: className) removeSelector: selector 
+	(self class environment at: className asSymbol ) removeSelector: selector 
 ]

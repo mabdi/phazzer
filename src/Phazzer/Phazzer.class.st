@@ -129,9 +129,9 @@ Phazzer >> removeAssertions: aTestMethod [
 
 { #category : #'as yet unclassified' }
 Phazzer >> removeFinishedTests [
-	| line |
-	self sandBoxedSharedfileName contents
-		splitOn: String cr
+	| line lines |
+	lines := self sandBoxedSharedfileName contents splitOn: String cr.
+	(lines reject: #isEmpty) 
 		do: [ :x | 
 			line := x splitOn: ','.
 			self tools removeSelector: (line at: 3) inClass: (line at: 2) ]
@@ -192,8 +192,8 @@ Phazzer >> runSandboxedWithPriority: priority [
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandBoxedSharedfileName [
-	^ (FileLocator imageDirectory
-		/ config sandBoxedSharedfileName) asFileReference
+	^ (FileLocator imageDirectory / config sandboxSharedFile)
+		asFileReference
 ]
 
 { #category : #'as yet unclassified' }

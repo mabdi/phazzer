@@ -6,7 +6,9 @@ Class {
 
 { #category : #test }
 PzFakeTest >> testFakeCrash [
-	| x |
+	| x v |
 	x := PzFake new.
-	x fakeCrash: false
+	v := 2 + 3.
+	x fakeCrash: false.
+	self assert: v equals: 5
 ]

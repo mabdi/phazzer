@@ -10,7 +10,8 @@ PhazzerTest >> testSandboxedCrash [
 	PzTools new clearTempClasses.
 	cnf := PzConfig new.
 	cnf sandbox: true.
+	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
 	Phazzer new
 		config: cnf;
-		phazzClass: PzFake
+		phazzClass: PzFakeTest
 ]
