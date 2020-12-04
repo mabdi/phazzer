@@ -180,8 +180,8 @@ Phazzer >> runSandboxedWithPriority: priority [
 	FileLocator image pathString = sandbox_image
 		ifTrue: [ ^ self ].
 	self sandBoxedSharedfileName exists
-		ifTrue:
-			[ self sandBoxedSharedfileName delete ].
+		ifTrue: [ self sandBoxedSharedfileName delete ].
+	self sandBoxedSharedfileName writeStream close.
 	Smalltalk backupTo: sandbox_image.
 	block := [ self
 		startSandboxAndWatchOnFinish: self sandboxOnFinishOrCrash ].
