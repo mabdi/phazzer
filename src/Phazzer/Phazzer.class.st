@@ -46,6 +46,11 @@ Phazzer >> eventForTestAnnouncement [
 		close ]
 ]
 
+{ #category : #accessing }
+Phazzer >> initialize [
+	config := PzConfig new
+]
+
 { #category : #'as yet unclassified' }
 Phazzer >> inputAmplify: aTestMethod [
 	
@@ -150,7 +155,60 @@ Phazzer >> runAllInstalled [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> runCommandAndWatchOnFinish: aBlock [
+Phazzer >> runSandBoxed [
+	^ self runSandboxedWithPriority: nil
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runSandboxedNotUIThread [
+	^ self runSandboxedWithPriority: Processor activePriority - 1
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runSandboxedWithPriority: priority [
+	| block master_image |
+	master_image := FileLocator image pathString.
+	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
+	FileLocator image pathString = sandbox_image
+		ifTrue: [ ^ self ].
+	(FileLocator imageDirectory / config sandBoxedSharedfileName) exists
+		ifTrue:
+			[ (FileLocator imageDirectory / config sandBoxedSharedfileName) delete ].
+	Smalltalk backupTo: sandbox_image.
+	block := [ self
+		startSandboxAndWatchOnFinish: self sandboxOnFinishOrCrash  ].
+	FileLocator image pathString = master_image
+		ifTrue:
+			[ priority ifNil: [ block value ] ifNotNil: [ block forkAt: priority ] ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxOnFinishOrCrash [
+	^ [ self removeFinishedTests.
+		self flag: #todo.
+		"if there is any test left, restart sandbox"
+		
+		 ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxStartCommand [
+	process := OSSUnixSubprocess new
+		command: FileLocator vmBinary pathString;
+		arguments:
+			{'--headless'.
+			sandbox_image, '.image'.
+			PzCommandLineHandler commandName.
+			'--run'}
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxStopCommand [
+	process sigterm 
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> startSandboxAndWatchOnFinish: aBlock [
 	| delay semaphorExecutor executor watcher |
 	delay := config freezeTimeOut seconds asDelay.
 	semaphorExecutor := Semaphore new.
@@ -174,48 +232,6 @@ Phazzer >> runCommandAndWatchOnFinish: aBlock [
 	executor resume.
 	semaphorExecutor wait.
 	aBlock value
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> runSandBoxed [
-	^ self runSandboxedWithPriority: nil
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> runSandboxedNotUIThread [
-	^ self runSandboxedWithPriority: Processor activePriority - 1
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> runSandboxedWithPriority: priority [
-	| block master_image |
-	master_image := FileLocator image pathString.
-	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
-	FileLocator image pathString = sandbox_image
-		ifTrue: [ ^ self ].
-	(FileLocator imageDirectory / config sandBoxedSharedfileName) exists
-		ifTrue: [ (FileLocator imageDirectory / config sandBoxedSharedfileName) delete ].
-	Smalltalk backupTo: sandbox_image.
-	block := [ self runCommandAndWatchOnFinish: self removeFinishedTests ].
-	FileLocator image pathString = master_image
-		ifTrue:
-			[ priority ifNil: [ block value ] ifNotNil: [ block forkAt: priority ] ]
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> sandboxStartCommand [
-	process := OSSUnixSubprocess new
-		command: FileLocator vmBinary pathString;
-		arguments:
-			{'--headless'.
-			sandbox_image, '.image'.
-			PzCommandLineHandler commandName.
-			'--run'}
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> sandboxStopCommand [
-	process sigterm 
 ]
 
 { #category : #accessing }
