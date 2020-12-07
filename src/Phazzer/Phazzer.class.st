@@ -195,7 +195,13 @@ Phazzer >> runSandboxedWithPriority: priority [
 		startSandboxAndWatchOnFinish: self sandboxOnFinishOrCrash ].
 	FileLocator image pathString = master_image
 		ifTrue:
-			[ priority ifNil: [ block value ] ifNotNil: [ block forkAt: priority ] ]
+			[ priority ifNil: [ block value ] ifNotNil: [ block forkAt: priority ] ].
+	FileLocator image pathString = sandbox_image
+		ifTrue: [ 
+			Semaphore new wait.
+			"self
+				error:
+					'Its the sandboxed execution. I start running from Commandline handler'" ]
 ]
 
 { #category : #'as yet unclassified' }

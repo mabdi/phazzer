@@ -1,6 +1,6 @@
 Class {
 	#name : #PzFake,
-	#superclass : #TestCase,
+	#superclass : #Object,
 	#category : #'Phazzer-Tests'
 }
 
@@ -10,5 +10,13 @@ PzFake >> fakeCrash: aBoolean [
 	
 	aBoolean
 		ifTrue: [ Smalltalk snapshot: false andQuit: true ].
+	^ 1
+]
+
+{ #category : #'as yet unclassified' }
+PzFake >> fakeFreeze: aBoolean [
+	| x |
+	aBoolean
+		ifTrue: [ Semaphore new wait ].
 	^ 1
 ]

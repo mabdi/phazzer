@@ -12,3 +12,12 @@ PzFakeTest >> testFakeCrash [
 	x fakeCrash: false.
 	self assert: v equals: 5
 ]
+
+{ #category : #test }
+PzFakeTest >> testFakeFreeze [
+	| x v |
+	x := PzFake new.
+	v := 2 + 3.
+	x fakeFreeze: false.
+	self assert: v equals: 5
+]

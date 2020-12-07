@@ -21,7 +21,6 @@ PzCommandLineHandler >> activate [
 	(self hasOption: 'run')
 		ifTrue: [ self flagExecuted.
 			Phazzer runAllInstalled.
-			
 			Smalltalk snapshot: false andQuit: true ]
 ]
 
