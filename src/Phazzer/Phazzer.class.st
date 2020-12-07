@@ -132,13 +132,16 @@ Phazzer >> removeFinishedTests [
 	| lines started |
 	lines := ((self sandBoxedSharedfileName contents splitOn: String cr)
 		reject: #isEmpty) collect: [ :x | x splitOn: ',' ].
-	started := lines select: [ :l | (l at: 4) = PzTools startedTag ].
+	started := (lines select: [ :l | (l at: 4) = PzTools startedTag ])
+		collect: [ :l | l allButLast ].
 	(lines select: [ :l | (l at: 4) = PzTools finishedTag ])
 		do: [ :l | 
-			started remove: l.
+			started remove: l allButLast.
 			self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
-	started do: [ :l | self tools moveToFinalSelector: (l at: 3) inClass: (l at: 2).
-		  self tools removeSelector: (l at: 3) inClass: (l at: 2)]
+	started
+		do: [ :l | 
+			self tools moveToFinalSelector: (l at: 3) inClass: (l at: 2).
+			self tools removeSelector: (l at: 3) inClass: (l at: 2) ]
 ]
 
 { #category : #'as yet unclassified' }
