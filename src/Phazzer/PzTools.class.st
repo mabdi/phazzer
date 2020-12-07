@@ -148,11 +148,12 @@ PzTools >> logTestStart: x [
 ]
 
 { #category : #'as yet unclassified' }
-PzTools >> moveToFinalSelector: selector inClass: cls [
-	| tcls mtd |
+PzTools >> moveToFinalSelector: selector inClass: className [
+	| tcls mtd cls |
 	tcls := nil.
-	mtd := (cls lookupSelector: selector) sourceCode.
-	self defaultFinalPackage asPackage classes
+	cls := self class environment at: className asSymbol.
+	mtd := (cls lookupSelector: selector asSymbol) sourceCode.
+	(self defaultFinalPackage asPackageIfAbsent: [ RPackageOrganizer default createPackageNamed: self defaultFinalPackage ]) classes
 		do: [ :dcls | 
 			dcls superclass = cls superclass
 				ifTrue: [ tcls := dcls ] ].

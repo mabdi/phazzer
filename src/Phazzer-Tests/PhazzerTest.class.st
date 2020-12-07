@@ -4,6 +4,11 @@ Class {
 	#category : #'Phazzer-Tests'
 }
 
+{ #category : #accessing }
+PhazzerTest class >> defaultTimeLimit [
+	^ 1 minute
+]
+
 { #category : #tests }
 PhazzerTest >> testSandboxedCrash [
 	| tools cnf t res finalP |

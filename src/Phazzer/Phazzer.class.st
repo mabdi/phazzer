@@ -208,10 +208,10 @@ Phazzer >> sandBoxedSharedfileName [
 Phazzer >> sandboxOnFinishOrCrash [
 	| testClasses |
 	^ [ self removeFinishedTests.
-	"testClasses := (self tools defaultTempPackage
+	testClasses := (self tools defaultTempPackage
 		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
 	(testClasses anySatisfy: [ :cls | cls testSelectors isNotEmpty ])
-		ifTrue: [ self run ]" ]
+		ifTrue: [ self run ] ]
 ]
 
 { #category : #'as yet unclassified' }
