@@ -153,13 +153,15 @@ PzTools >> moveToFinalSelector: selector inClass: className [
 	tcls := nil.
 	cls := self class environment at: className asSymbol.
 	mtd := (cls lookupSelector: selector asSymbol) sourceCode.
-	(self defaultFinalPackage asPackageIfAbsent: [ RPackageOrganizer default createPackageNamed: self defaultFinalPackage ]) classes
+	(self defaultFinalPackage
+		asPackageIfAbsent: [ RPackageOrganizer default
+				createPackageNamed: self defaultFinalPackage ]) classes
 		do: [ :dcls | 
 			dcls superclass = cls superclass
 				ifTrue: [ tcls := dcls ] ].
 	tcls
-		ifNil: [ self buildFinalTestClassWith: {mtd} using: cls ]
-		ifNotNil: [ cls compile: mtd ]
+		ifNil: [ self buildFinalTestClassWith: {mtd} using: cls superclass ]
+		ifNotNil: [ tcls compile: mtd ]
 ]
 
 { #category : #'as yet unclassified' }

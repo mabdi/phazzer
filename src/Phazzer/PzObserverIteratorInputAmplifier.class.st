@@ -15,7 +15,10 @@ PzObserverIteratorInputAmplifier >> amplifyInputs [
 	3. In the helper method, list all public methods lacking a parameter. (allSelector below Object?)
 	4. 	bingo
 		"
+	| results |
+	results := OrderedCollection new.
 	self flag: #todo.
+	^ results
 	
 ]
 
