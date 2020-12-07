@@ -151,6 +151,7 @@ Phazzer >> runAllInstalled [
 		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
 	testClasses
 		do: [ :cls | 
+			cls sandBoxedSharedfileName: self sandBoxedSharedfileName. 
 			ts := cls buildSuite.
 			ts when: TestAnnouncement do: self eventForTestAnnouncement.
 			[ ts := ts run ]
@@ -198,11 +199,12 @@ Phazzer >> sandBoxedSharedfileName [
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxOnFinishOrCrash [
+	| testClasses |
 	^ [ self removeFinishedTests.
-		self flag: #todo.
-		"if there is any test left, restart sandbox"
-		
-		 ]
+	testClasses := (self tools defaultTempPackage
+		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
+	(testClasses anySatisfy: [ :cls | cls testSelectors isNotEmpty ])
+		ifTrue: [ self run ] ]
 ]
 
 { #category : #'as yet unclassified' }

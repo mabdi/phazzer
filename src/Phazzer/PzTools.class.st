@@ -7,11 +7,21 @@ Class {
 	#category : #Phazzer
 }
 
+{ #category : #'as yet unclassified' }
+PzTools class >> finishedTag [
+	^ 'finished'
+]
+
 { #category : #accessing }
 PzTools class >> instanceId [
 	instanceId ifNil: [ instanceId := 0 ].
 	instanceId := instanceId + 1.
 	^ instanceId
+]
+
+{ #category : #'as yet unclassified' }
+PzTools class >> startedTag [
+	^ 'started'
 ]
 
 { #category : #'as yet unclassified' }
@@ -45,10 +55,26 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 		answer := Set withAll: self testSelectors.
 		answer addAll: self superclass allTestSelectors.
 		^ answer asSortedCollection asOrderedCollection'."
+	(tempClass allInstVarNames includes: #sandBoxedSharedfileName) ifFalse:
+	[tempClass addInstVarNamed: 'sandBoxedSharedfileName'].
 	tempClass class
 		pzCompile:
 			'defaultTimeLimit
 	^ 3 seconds '.
+	tempClass
+		pzCompile:
+			'setUp
+	super setUp.
+	' , self class name asString , ' new logTestStart: self '.
+	tempClass
+		pzCompile:
+			'tearDown
+	super tearDown.
+	' , self class name asString , ' new logTestFinished: self'.
+	tempClass
+		pzCompile: 'sandBoxedSharedfileName ^ sandBoxedSharedfileName'.
+	tempClass
+		pzCompile: 'sandBoxedSharedfileName: aFile sandBoxedSharedfileName := aFile'.
 	aCollection
 		do: [ :item | 
 			| ast |
@@ -90,11 +116,44 @@ PzTools >> getId [
 ]
 
 { #category : #'as yet unclassified' }
+PzTools >> logTestFinished: x [
+	| str |
+	str := ','
+		join:
+			{Time nowUTC print24.
+			x test class name.
+			x test selector.
+			self class finishedTag}.
+	x sandBoxedSharedfileName writeStream
+		setToEnd;
+		nextPutAll: str;
+		cr;
+		close
+]
+
+{ #category : #'as yet unclassified' }
+PzTools >> logTestStart: x [
+	| str |
+	str := ','
+		join:
+			{Time nowUTC print24.
+			x test class name.
+			x test selector.
+			self class startedTag}.
+	x sandBoxedSharedfileName writeStream
+		setToEnd;
+		nextPutAll: str;
+		cr;
+		close
+]
+
+{ #category : #'as yet unclassified' }
 PzTools >> parsedMethodFrom: aSourceCode [
 	^ RBParser parseMethod: aSourceCode
 ]
 
 { #category : #removing }
 PzTools >> removeSelector: selector inClass: className [
-	(self class environment at: className asSymbol ) removeSelector: selector 
+	(self class environment at: className asSymbol)
+		removeSelectorSilently: selector asSymbol 
 ]
