@@ -6,14 +6,15 @@ Class {
 
 { #category : #tests }
 PhazzerTest >> testSandboxedCrash [
-	| tools cnf t res |
+	| tools cnf t res finalP |
 	t := PzFakeTest.
 	tools := PzTools new.
-	tools defaultFinalPackage asPackage classes
-		do: [ :x | 
-			x superclass = t
-				ifTrue: [ x removeFromSystem ] ].
-
+	finalP := tools defaultFinalPackage asPackageIfAbsent: [ nil ].
+	finalP
+		ifNotNil: [ finalP classes
+				do: [ :x | 
+					x superclass = t
+						ifTrue: [ x removeFromSystem ] ] ].
 	PzTools new clearTempClasses.
 	cnf := PzConfig new.
 	cnf sandbox: true.
@@ -22,8 +23,8 @@ PhazzerTest >> testSandboxedCrash [
 		config: cnf;
 		phazzClass: t.
 	self assertEmpty: tools defaultTempPackage asPackage classes.
-	res := tools defaultFinalPackage asPackage classes
-		select: [ :x | x superclass = t ].
-	self assert: res isNotEmpty.
-	
+	finalP := tools defaultFinalPackage
+		asPackageIfAbsent: [ self deny: true ].
+	res := finalP classes select: [ :x | x superclass = t ].
+	self assert: res isNotEmpty
 ]
