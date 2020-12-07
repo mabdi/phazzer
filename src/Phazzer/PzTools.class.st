@@ -55,8 +55,8 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 		answer := Set withAll: self testSelectors.
 		answer addAll: self superclass allTestSelectors.
 		^ answer asSortedCollection asOrderedCollection'."
-	(tempClass allInstVarNames includes: #sandBoxedSharedfileName) ifFalse:
-	[tempClass addInstVarNamed: 'sandBoxedSharedfileName'].
+	(tempClass class allInstVarNames includes: #sandBoxedSharedfileName)
+		ifFalse: [ tempClass class addInstVarNamed: 'sandBoxedSharedfileName' ].
 	tempClass class
 		pzCompile:
 			'defaultTimeLimit
@@ -71,9 +71,9 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 			'tearDown
 	super tearDown.
 	' , self class name asString , ' new logTestFinished: self'.
-	tempClass
+	tempClass class
 		pzCompile: 'sandBoxedSharedfileName ^ sandBoxedSharedfileName'.
-	tempClass
+	tempClass class
 		pzCompile: 'sandBoxedSharedfileName: aFile sandBoxedSharedfileName := aFile'.
 	aCollection
 		do: [ :item | 
@@ -121,10 +121,10 @@ PzTools >> logTestFinished: x [
 	str := ','
 		join:
 			{Time nowUTC print24.
-			x test class name.
-			x test selector.
+			x  class name.
+			x  selector.
 			self class finishedTag}.
-	x sandBoxedSharedfileName writeStream
+	x class sandBoxedSharedfileName writeStream
 		setToEnd;
 		nextPutAll: str;
 		cr;
@@ -137,10 +137,10 @@ PzTools >> logTestStart: x [
 	str := ','
 		join:
 			{Time nowUTC print24.
-			x test class name.
-			x test selector.
+			x class name.
+			x selector.
 			self class startedTag}.
-	x sandBoxedSharedfileName writeStream
+	x class sandBoxedSharedfileName writeStream
 		setToEnd;
 		nextPutAll: str;
 		cr;

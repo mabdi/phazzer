@@ -151,9 +151,9 @@ Phazzer >> runAllInstalled [
 		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
 	testClasses
 		do: [ :cls | 
-			cls sandBoxedSharedfileName: self sandBoxedSharedfileName. 
+			cls sandBoxedSharedfileName: self sandBoxedSharedfileName.
 			ts := cls buildSuite.
-			ts when: TestAnnouncement do: self eventForTestAnnouncement.
+			"ts when: TestAnnouncement do: self eventForTestAnnouncement."
 			[ ts := ts run ]
 				on: Exception
 				do: [ :x | 
