@@ -148,12 +148,28 @@ PzTools >> logTestStart: x [
 ]
 
 { #category : #'as yet unclassified' }
+PzTools >> moveToFinalSelector: selector inClass: cls [
+	| tcls mtd |
+	tcls := nil.
+	mtd := (cls lookupSelector: selector) sourceCode.
+	self defaultFinalPackage asPackage classes
+		do: [ :dcls | 
+			dcls superclass = cls superclass
+				ifTrue: [ tcls := dcls ] ].
+	tcls
+		ifNil: [ self buildFinalTestClassWith: {mtd} using: cls ]
+		ifNotNil: [ cls compile: mtd ]
+]
+
+{ #category : #'as yet unclassified' }
 PzTools >> parsedMethodFrom: aSourceCode [
 	^ RBParser parseMethod: aSourceCode
 ]
 
 { #category : #removing }
 PzTools >> removeSelector: selector inClass: className [
-	(self class environment at: className asSymbol)
-		removeSelectorSilently: selector asSymbol 
+	| cls |
+	cls := self class environment at: className asSymbol.
+	cls removeSelectorSilently: selector asSymbol.
+	cls testSelectors ifEmpty: [ cls removeFromSystem  ]
 ]

@@ -129,12 +129,16 @@ Phazzer >> removeAssertions: aTestMethod [
 
 { #category : #'as yet unclassified' }
 Phazzer >> removeFinishedTests [
-	| line lines |
-	lines := self sandBoxedSharedfileName contents splitOn: String cr.
-	(lines reject: #isEmpty) 
-		do: [ :x | 
-			line := x splitOn: ','.
-			self tools removeSelector: (line at: 3) inClass: (line at: 2) ]
+	| lines started |
+	lines := ((self sandBoxedSharedfileName contents splitOn: String cr)
+		reject: #isEmpty) collect: [ :x | x splitOn: ',' ].
+	started := lines select: [ :l | (l at: 4) = PzTools startedTag ].
+	(lines select: [ :l | (l at: 4) = PzTools finishedTag ])
+		do: [ :l | 
+			started remove: l.
+			self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
+	started do: [ :l | self tools moveToFinalSelector: (l at: 3) inClass: (l at: 2).
+		  self tools removeSelector: (l at: 3) inClass: (l at: 2)]
 ]
 
 { #category : #'as yet unclassified' }
@@ -201,10 +205,10 @@ Phazzer >> sandBoxedSharedfileName [
 Phazzer >> sandboxOnFinishOrCrash [
 	| testClasses |
 	^ [ self removeFinishedTests.
-	testClasses := (self tools defaultTempPackage
+	"testClasses := (self tools defaultTempPackage
 		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
 	(testClasses anySatisfy: [ :cls | cls testSelectors isNotEmpty ])
-		ifTrue: [ self run ] ]
+		ifTrue: [ self run ]" ]
 ]
 
 { #category : #'as yet unclassified' }
