@@ -73,6 +73,7 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 	| nodes sameTypeNodes half res |
 	nodes := aMethodAST body allChildren
 		select: [ :n | n isLiteralNode and: [ n value isNumber ] ].
+	res := OrderedCollection new.
 	mappings
 		addAll:
 			(nodes
@@ -81,14 +82,16 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 					half := n value isInteger
 						ifTrue: [ (n value / 2) asInteger ]
 						ifFalse: [ n value / 2 ].
-					res := {(n -> (RBLiteralValueNode value: n value - 1)).
-					(n -> (RBLiteralValueNode value: n value + 1)).
-					(n -> (RBLiteralValueNode value: n value * -1)).
-					(n -> (RBLiteralValueNode value: n value * 2)).
-					(n -> (RBLiteralValueNode value: half)).
-					(sameTypeNodes
-						ifEmpty: [ nil ]
-						ifNotEmpty: [ n -> (RBLiteralValueNode value: sameTypeNodes atRandom value) ])}.
+					res
+						addAll:
+							{(n -> (RBLiteralValueNode value: n value - 1)).
+							(n -> (RBLiteralValueNode value: n value + 1)).
+							(n -> (RBLiteralValueNode value: n value * -1)).
+							(n -> (RBLiteralValueNode value: n value * 2)).
+							(n -> (RBLiteralValueNode value: half)).
+							(sameTypeNodes
+								ifEmpty: [ nil ]
+								ifNotEmpty: [ n -> (RBLiteralValueNode value: sameTypeNodes atRandom value) ])}.
 					n parent isLiteralArray
 						ifFalse: [ n value isFloat
 								ifTrue: [ res
@@ -96,8 +99,8 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 											{(n
 												->
 													(RBMessageNode receiver: (RBVariableNode named: #Float) selector: #nan)).
-											(n -> RBLiteralValueNode value: 0.0).
-											(n -> RBLiteralValueNode value: -0.0).
+											(n -> (RBLiteralValueNode value: 0.0)).
+											(n -> (RBLiteralValueNode value: -0.0)).
 											(n
 												->
 													(RBMessageNode
@@ -111,7 +114,7 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 							n value isInteger
 								ifTrue: [ res
 										addAll:
-											{(n -> RBLiteralValueNode value: 0).
+											{(n -> (RBLiteralValueNode value: 0)).
 											(n
 												->
 													(RBMessageNode
