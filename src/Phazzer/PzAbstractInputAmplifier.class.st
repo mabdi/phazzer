@@ -28,22 +28,20 @@ PzAbstractInputAmplifier >> helperMethods [
 
 { #category : #removing }
 PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
-	| versions |
+	| result versions |
+	result  :=  OrderedCollection new.
 	testMethod := aTestMethod.
 	helperMethods := OrderedCollection new.
 	aMethodAST := self tool parsedMethodFrom: testMethod.
 	[ versions := self amplifyInputs.
-	^ self rename: versions ]
+	result addAll: (self rename: versions).
+	result addAll: helperMethods.
+	^ result  ]
 		on: Error
 		do: [ :x | 
 			config debug
 				ifTrue: [ self halt ].
 			^ {} ]
-]
-
-{ #category : #removing }
-PzAbstractInputAmplifier >> inputAmplifyHelper: aMethod [
-	^ self inputAmplify: aMethod
 ]
 
 { #category : #'as yet unclassified' }

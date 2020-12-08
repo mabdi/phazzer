@@ -36,7 +36,7 @@ Phazzer >> eventForTestAnnouncement [
 		close ]
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 Phazzer >> initialize [
 	config := PzConfig new
 ]
@@ -60,11 +60,6 @@ Phazzer >> install: testMethods base: aTestClass [
 	| tc |
 	tc := self tools buildTestClassWith: testMethods using: aTestClass.
 	^ {tc}
-]
-
-{ #category : #accessing }
-Phazzer >> intialize [
-	config := PzConfig 
 ]
 
 { #category : #'as yet unclassified' }
