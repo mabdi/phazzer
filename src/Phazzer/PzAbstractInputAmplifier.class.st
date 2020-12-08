@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'config',
 		'testMethod',
-		'aMethodAST'
+		'aMethodAST',
+		'helperMethods'
 	],
 	#category : #Phazzer
 }
@@ -21,10 +22,16 @@ PzAbstractInputAmplifier >> amplifyInputs [
 ]
 
 { #category : #removing }
+PzAbstractInputAmplifier >> helperMethods [
+	^ helperMethods
+]
+
+{ #category : #removing }
 PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
 	| versions |
 	testMethod := aTestMethod.
-	aMethodAST := self tool parsedMethodFrom:  testMethod.
+	helperMethods := OrderedCollection new.
+	aMethodAST := self tool parsedMethodFrom: testMethod.
 	[ versions := self amplifyInputs.
 	^ self rename: versions ]
 		on: Error
@@ -32,6 +39,11 @@ PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
 			config debug
 				ifTrue: [ self halt ].
 			^ {} ]
+]
+
+{ #category : #removing }
+PzAbstractInputAmplifier >> inputAmplifyHelper: aMethod [
+	^ self inputAmplify: aMethod
 ]
 
 { #category : #'as yet unclassified' }

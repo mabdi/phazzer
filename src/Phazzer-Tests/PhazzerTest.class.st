@@ -33,12 +33,12 @@ PhazzerTest >> setUp [
 
 { #category : #running }
 PhazzerTest >> tearDown [
-	| finalP |
+	[| finalP |
 	finalP := PzTools new defaultFinalPackage asPackage.
 	finalP classes
 		do: [ :x | 
 			x superclass = target
-				ifTrue: [ x removeFromSystem ] ]
+				ifTrue: [ x removeFromSystem ] ]]
 ]
 
 { #category : #tests }

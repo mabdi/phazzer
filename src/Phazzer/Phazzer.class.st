@@ -21,20 +21,6 @@ Phazzer >> config: aConfig [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> continueCondition [
-	| fileContent lastLine time |
-	self sandBoxedSharedfileName exists
-		ifFalse: [ ^ false ].
-	fileContent := self sandBoxedSharedfileName contents
-		splitOn: String cr.
-	fileContent size < 2
-		ifTrue: [ ^ false ].
-	lastLine := fileContent at: fileContent size - 1.
-	time := Time fromString: ((lastLine splitOn: ',') at: 1).
-	^ (Time now subtractTime: time) asSeconds > config freezeTimeOut
-]
-
-{ #category : #'as yet unclassified' }
 Phazzer >> eventForTestAnnouncement [
 	| str |
 	^ [ :x | 
@@ -133,15 +119,36 @@ Phazzer >> removeFinishedTests [
 	lines := ((self sandBoxedSharedfileName contents splitOn: String cr)
 		reject: #isEmpty) collect: [ :x | x splitOn: ',' ].
 	started := (lines select: [ :l | (l at: 4) = PzTools startedTag ])
-		collect: [ :l | l allButLast ].
+		collect: [ :l | 
+			{(l at: 2).
+			(l at: 3)} ].
 	(lines select: [ :l | (l at: 4) = PzTools finishedTag ])
 		do: [ :l | 
-			started remove: l allButLast.
+			started
+				remove:
+					{(l at: 2).
+					(l at: 3)}.
 			self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
 	started
 		do: [ :l | 
-			self tools moveToFinalSelector: (l at: 3) inClass: (l at: 2).
-			self tools removeSelector: (l at: 3) inClass: (l at: 2) ]
+			self tools moveToFinalSelector: (l at: 2) inClass: (l at: 1).
+			self tools removeSelector: (l at: 2) inClass: (l at: 1) ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> requiresToStopSandbox [
+	| fileContent lines lastLine time |
+	self sandBoxedSharedfileName exists
+		ifFalse: [ ^ false ].
+	fileContent := self sandBoxedSharedfileName.
+	fileContent ifNil: [ ^ false ].
+	lines := fileContent contents splitOn: String cr.
+	lines ifNil: [ ^ false ].
+	lines size < 2
+		ifTrue: [ ^ false ].
+	lastLine := lines at: lines size - 1.
+	time := Time fromString: ((lastLine splitOn: ',') at: 1).
+	^ (Time now subtractTime: time) asSeconds > config freezeTimeOut
 ]
 
 { #category : #'as yet unclassified' }
@@ -254,15 +261,17 @@ Phazzer >> startSandboxAndWatchOnFinish: aBlock [
 			delay delaySemaphore signal ] ]
 		on: Error
 		do: [ :ex | 
+			self halt.
 			self sandboxStopCommand.
 			semaphorExecutor signal ] ] newProcess.
 	watcher := [ | goOn |
 	goOn := true.
 	[ goOn ]
-		whileTrue: [ self continueCondition
-				ifTrue: [ executor ifNotNil: [ executor signalException: Error new ].
+		whileTrue: [ self requiresToStopSandbox
+				ifTrue: [ self halt. executor ifNotNil: [ executor signalException: Error new ].
 					goOn := false ]
-				ifFalse: [ delay := config freezeTimeOut seconds asDelay..delay wait ] ] ] newProcess.
+				ifFalse: [ delay := config freezeTimeOut seconds asDelay.
+					delay wait ] ] ] newProcess.
 	watcher priority: executor priority + 1.
 	watcher resume.
 	executor resume.

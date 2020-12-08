@@ -120,9 +120,9 @@ PzTools >> logTestFinished: x [
 	| str |
 	str := ','
 		join:
-			{Time nowUTC print24.
-			x  class name.
-			x  selector.
+			{Time now print24.
+			x class name.
+			x selector.
 			self class finishedTag}.
 	x class sandBoxedSharedfileName writeStream
 		setToEnd;
@@ -136,7 +136,7 @@ PzTools >> logTestStart: x [
 	| str |
 	str := ','
 		join:
-			{Time nowUTC print24.
+			{Time now print24.
 			x class name.
 			x selector.
 			self class startedTag}.

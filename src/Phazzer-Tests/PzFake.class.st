@@ -17,6 +17,6 @@ PzFake >> fakeCrash: aBoolean [
 PzFake >> fakeFreeze: aBoolean [
 	| x |
 	aBoolean
-		ifTrue: [ Semaphore new wait ].
+		ifTrue: [ self flag: #todo. "a freeze " ].
 	^ 1
 ]
