@@ -46,6 +46,7 @@ PhazzerTest >> testSandboxedCrash [
 	| cnf res finalP |
 	cnf := PzConfig new.
 	cnf sandbox: true.
+	cnf freezeTimeOut: 5.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
 	Phazzer new
 		config: cnf;

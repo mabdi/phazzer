@@ -17,6 +17,6 @@ PzFake >> fakeCrash: aBoolean [
 PzFake >> fakeFreeze: aBoolean [
 	| x |
 	aBoolean
-		ifTrue: [ self flag: #todo. "a freeze " ].
+		ifTrue: [ 10 seconds asDelay wait ].
 	^ 1
 ]

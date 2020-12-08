@@ -4,6 +4,11 @@ Class {
 	#category : #'Phazzer-Tests'
 }
 
+{ #category : #accessing }
+PzFakeTest class >> defaultTimeLimit [
+	^ 10 seconds 
+]
+
 { #category : #test }
 PzFakeTest >> testFakeCrash [
 	| x v |
