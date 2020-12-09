@@ -2,58 +2,17 @@ Class {
 	#name : #Phazzer,
 	#superclass : #Object,
 	#instVars : [
-		'config'
-	],
-	#classInstVars : [
-		'instanceId'
+		'config',
+		'process',
+		'sandbox_image'
 	],
 	#category : #Phazzer
 }
 
 { #category : #'as yet unclassified' }
-Phazzer class >> defaultConfig [
-]
-
-{ #category : #accessing }
-Phazzer class >> instanceId [
-	instanceId ifNil: [ instanceId := 0 ].
-	instanceId := instanceId + 1.
-	^ instanceId
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer class >> onMethod: aTestMethod [
-	self flag: #todo.	"check isTestMethod"
-	self new
-		config: self defaultConfig;
-		fuzzMethod: aTestMethod
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> buildTestClassWith: aCollection using: testClass [
-	| tempClass |
-	tempClass := testClass
-		subclass: (testClass name asString , self getId asString) asSymbol
-		instanceVariableNames: ''
-		classVariableNames: ''
-		package: self defaultTempPackage.
-	tempClass class
-		pzCompile:
-			'allTestSelectors
-		| answer |
-		answer := Set withAll: self testSelectors.
-		answer addAll: self superclass allTestSelectors.
-		^ answer asSortedCollection asOrderedCollection'.
-	tempClass class
-		pzCompile:
-			'defaultTimeLimit
-	^ 3 seconds '.
-	aCollection
-		do: [ :item | 
-			| ast |
-			ast := self parsedMethodFrom: item.
-			tempClass pzCompile: ast formattedCode ].
-	^ tempClass
+Phazzer class >> runAllInstalled [
+	^ self new
+		runAllInstalled
 ]
 
 { #category : #accessing }
@@ -62,22 +21,35 @@ Phazzer >> config: aConfig [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> defaultTempPackage [
-	^ 'PhazzerTempClasses'
+Phazzer >> eventForTestAnnouncement [
+	| str |
+	^ [ :x | 
+	str := ','
+		join:
+			{Time nowUTC print24.
+			x test class name.
+			x test selector}.
+	self sandBoxedSharedfileName writeStream
+		setToEnd;
+		nextPutAll: str;
+		cr;
+		close ]
+]
+
+{ #category : #initialization }
+Phazzer >> initialize [
+	config := PzConfig new
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> fuzzMethod: aTestMethod [
-	| ts tc |
-	ts := config amps
-		flatCollect: [ :amp | amp inputAmplify: aTestMethod ].
-	tc := self install: ts base: aTestMethod methodClass.
-	self run: tc
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> getId [
-	^ self class instanceId
+Phazzer >> inputAmplify: aTestMethod selector: selector [
+	| res |
+	res := OrderedCollection new.
+	config amps
+		do:
+			[ :amp | res addAll: ((amp initializeWith: config) inputAmplify: aTestMethod) ]
+		displayingProgress: 'Input Amplifying: ' , selector.
+	^ res
 ]
 
 { #category : #'as yet unclassified' }
@@ -86,17 +58,226 @@ Phazzer >> install: testMethods base: aTestClass [
 	 returns the list of fake test classes"
 
 	| tc |
-	self flag: #todo.	"paging"
-	tc := self buildTestClassWith: testMethods using: aTestClass.
-	^ { tc }
+	tc := self tools buildTestClassWith: testMethods using: aTestClass.
+	^ {tc}
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> parsedMethodFrom: aSourceCode [
-	^ RBParser parseMethod: aSourceCode
+Phazzer >> phazzClass: class [
+	self processTestClass: class.
+	self run
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> run: testClasses [
+Phazzer >> phazzMethod: method [
+	self processTestMethod: method.
+	self run
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> phazzPackage: package [
+	self processPackage: package.
+	self run
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> processPackage: package [
+	(package definedClasses select: [ :cls | cls isTestCase ])
+		do: [ :cls | self processTestClass: cls ]
+		displayingProgress: 'Package ', package name
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> processTestClass: aTestClass [
+	aTestClass allTestSelectors
+		do:
+			[ :selector | self processTestMethod: (aTestClass lookupSelector: selector) ]
+				displayingProgress: 'Class ' , aTestClass name
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> processTestMethod: aTestMethod [
+	| t ts |
+	t := self removeAssertions: aTestMethod.
+	ts := self inputAmplify: t selector: aTestMethod selector.
+	self install: ts base: aTestMethod methodClass
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> removeAssertions: aTestMethod [
+	^ (PzAssertTransform transformAllAsserts: aTestMethod ast) formattedCode 
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> removeFinishedTests [
+	| lines started |
+	lines := ((self sandBoxedSharedfileName contents splitOn: String cr)
+		reject: #isEmpty) collect: [ :x | x splitOn: ',' ].
+	started := (lines select: [ :l | (l at: 4) = PzTools startedTag ])
+		collect: [ :l | 
+			{(l at: 2).
+			(l at: 3)} ].
+	(lines select: [ :l | (l at: 4) = PzTools finishedTag ])
+		do: [ :l | 
+			started
+				remove:
+					{(l at: 2).
+					(l at: 3)}.
+			self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
+	started
+		do: [ :l | 
+			self tools moveToFinalSelector: (l at: 2) inClass: (l at: 1).
+			self tools removeSelector: (l at: 2) inClass: (l at: 1) ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> requiresToStopSandbox [
+	| fileContent lines lastLine time noUpdates |
+	self sandBoxedSharedfileName exists
+		ifFalse: [ ^ false ].
+	fileContent := self sandBoxedSharedfileName.
+	fileContent ifNil: [ ^ false ].
+	lines := fileContent contents splitOn: String cr.
+	lines ifNil: [ ^ false ].
+	lines size < 2
+		ifTrue: [ ^ false ].
+	lastLine := lines at: lines size - 1.
+	time := Time fromString: ((lastLine splitOn: ',') at: 1).
+	noUpdates := (Time now subtractTime: time) asSeconds.
+	('noUpdates: ' , noUpdates asString , '') traceCr.
+	^ noUpdates > config freezeTimeOut
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> run [
+	config sandbox
+		ifTrue: [ self runSandboxedNotUIThread ]
+		ifFalse: [ self runAllInstalled ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runAllInstalled [
+	| testClasses ts |
+	testClasses := (self tools defaultTempPackage
+		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
+	testClasses
+		do: [ :cls | 
+			cls sandBoxedSharedfileName: self sandBoxedSharedfileName.
+			ts := cls buildSuite.
+			"ts when: TestAnnouncement do: self eventForTestAnnouncement."
+			[ ts := ts run ]
+				on: Exception
+				do: [ :x | 
+					x isResumable
+						ifTrue: [ x resume ].
+					nil ] ]
+		displayingProgress: 'Test classes'.
 	
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runSandBoxed [
+	^ self runSandboxedWithPriority: nil
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runSandboxedNotUIThread [
+	^ self runSandboxedWithPriority: Processor activePriority - 1
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runSandboxedWithPriority: priority [
+	| master_image |
+	master_image := FileLocator image pathString.
+	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
+	FileLocator image pathString = sandbox_image
+		ifTrue: [ ^ self ].
+	self sandBoxedSharedfileName exists
+		ifTrue: [ self sandBoxedSharedfileName delete ].
+	self sandBoxedSharedfileName writeStream close.
+	Smalltalk backupTo: sandbox_image.
+	FileLocator image pathString = master_image
+		ifTrue: [ self
+				startSandboxAndWatchPriority: priority
+				OnFinish: self sandboxOnFinishOrCrash ].
+	FileLocator image pathString = sandbox_image
+		ifTrue: [ Semaphore new wait. self flag: #todo. "find a better way to kill this process safley in the sandbox"
+			"self
+				error:
+					'Its the sandboxed execution. I start running from Commandline handler'" ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandBoxedSharedfileName [
+	^ (FileLocator imageDirectory / config sandboxSharedFile)
+		asFileReference
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxOnFinishOrCrash [
+	| testClasses |
+	^ [ self removeFinishedTests.
+	testClasses := (self tools defaultTempPackage
+		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
+	(testClasses anySatisfy: [ :cls | cls testSelectors isNotEmpty ])
+		ifTrue: [ self run ] ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxStartCommand [
+	[ process := OSSUnixSubprocess new
+		command: FileLocator vmBinary pathString;
+		arguments:
+			{'--headless'.
+			(sandbox_image , '.image').
+			PzCommandLineHandler commandName.
+			'--run'} ].
+	process := OSSUnixSubprocess new
+		command: FileLocator vmBinary pathString;
+		arguments:
+			{(sandbox_image , '.image').
+			PzCommandLineHandler commandName.
+			'--run'}.
+	process runAndWait
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxStopCommand [
+	('killing pid: ' , process pid asString) traceCr.
+	process sigterm
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> startSandboxAndWatchPriority: priority OnFinish: aBlock [
+	| delay semaphorExecutor executor watcher |
+	delay := 1 seconds asDelay.
+	semaphorExecutor := Semaphore new.
+	executor := [ [ [ self sandboxStartCommand ]
+		ensure: [ executor := nil.
+			delay delaySemaphore signal.
+			semaphorExecutor signal ] ]
+		on: Error
+		do: [ :ex | 
+			'killing executor' traceCr.
+			self sandboxStopCommand.
+			semaphorExecutor signal ] ] newProcess.
+	executor priority: priority.
+	watcher := [ | goOn |
+	goOn := true.
+	[ goOn ]
+		whileTrue: [ self requiresToStopSandbox
+				ifTrue: [ executor ifNotNil: [ executor signalException: Error new ].
+					goOn := false ]
+				ifFalse: [ delay := 1 seconds asDelay.
+					delay wait ] ] ] newProcess.
+	watcher priority: executor priority + 1.
+	watcher resume.
+	executor resume.
+	semaphorExecutor wait.
+	aBlock value
+]
+
+{ #category : #accessing }
+Phazzer >> tools [
+	^ PzTools new
 ]

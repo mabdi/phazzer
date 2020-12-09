@@ -6,8 +6,8 @@ Class {
 
 { #category : #removing }
 PzDuplicateInputAmplifier >> amplifyInputs [
-	| results aMethodAST |
-	aMethodAST := testMethod ast.
+	| results  |
+
 	results := OrderedCollection new.
 	aMethodAST statements
 		doWithIndex:

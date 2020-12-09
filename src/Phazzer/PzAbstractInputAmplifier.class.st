@@ -3,7 +3,9 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'config',
-		'testMethod'
+		'testMethod',
+		'aMethodAST',
+		'helperMethods'
 	],
 	#category : #Phazzer
 }
@@ -20,11 +22,22 @@ PzAbstractInputAmplifier >> amplifyInputs [
 ]
 
 { #category : #removing }
+PzAbstractInputAmplifier >> helperMethods [
+	^ helperMethods
+]
+
+{ #category : #removing }
 PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
-	| versions |
+	| result versions |
+	result  :=  OrderedCollection new.
 	testMethod := aTestMethod.
+	helperMethods := OrderedCollection new.
+	aMethodAST := self tool parsedMethodFrom: testMethod.
 	[ versions := self amplifyInputs.
-	^ self rename:versions ]
+	result addAll: (self rename: versions).
+	result addAll: helperMethods.
+	^ result  ]
+
 		on: Error
 		do: [ :x | 
 			config debug
@@ -44,22 +57,25 @@ PzAbstractInputAmplifier >> rename: versions [
 	^ versions
 		collect: [ :mtd | 
 			| cp |
-			cp := 
-				
-					(self
-						renameMethodName: mtd
-						append: '_' , self namingPrefix , idx asString)
-						formattedCode.
+			cp := (self
+				renameMethodName: (self tool parsedMethodFrom: mtd)
+				append: '_' , self namingPrefix , idx asString) formattedCode.
 			idx := idx + 1.
 			cp ]
 ]
 
 { #category : #'change set' }
-PzAbstractInputAmplifier >> renameMethodName: ast append: aText [
+PzAbstractInputAmplifier >> renameMethodName: anAst append: aText [
 	| first |
-	first := (ast selector splitOn: $:) at: 1.
-	ast selector: ((ast selector splitOn: $:) at: 1 put: first , aText).
-	^ ast
+	first := (anAst selector splitOn: $:) at: 1.
+	anAst
+		selector: ((anAst selector splitOn: $:) at: 1 put: first , aText).
+	^ anAst
+]
+
+{ #category : #'change set' }
+PzAbstractInputAmplifier >> tool [
+	^ PzTools new
 ]
 
 { #category : #removing }
