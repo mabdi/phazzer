@@ -176,7 +176,7 @@ PzTools >> parsedMethodFrom: aSourceCode [
 { #category : #removing }
 PzTools >> removeSelector: selector inClass: className [
 	| cls |
-	cls := self class environment at: className asSymbol.
+	cls := self class environment at: className asSymbol ifAbsent: [^ self ].
 	cls removeSelectorSilently: selector asSymbol.
-	cls testSelectors ifEmpty: [ cls removeFromSystem  ]
+	cls testSelectors ifEmpty: [ cls removeFromSystem ]
 ]
