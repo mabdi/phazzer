@@ -3,7 +3,7 @@ Fuzzer for Pharo
 
 
 ```smalltalk
-RPackage organizer packages do: #phazz
+Phazzer new phazzPackage: (RPackage organizer packageNamed: #'Awesome-Tests')
 ```
 
 
