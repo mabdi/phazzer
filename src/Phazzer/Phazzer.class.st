@@ -9,6 +9,15 @@ Class {
 	#category : #Phazzer
 }
 
+{ #category : #structure }
+Phazzer class >> hackThePlanet [
+| pz |
+	pz := self new.
+	RPackage organizer packages
+		do: [ :p | pz phazzPackage: p ]
+		displayingProgress: [ :p | 'Phazzing all image: ' , p name ]
+]
+
 { #category : #'as yet unclassified' }
 Phazzer class >> runAllInstalled [
 	^ self new
