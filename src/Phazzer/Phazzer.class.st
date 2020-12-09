@@ -159,6 +159,10 @@ Phazzer >> requiresToStopSandbox [
 
 { #category : #'as yet unclassified' }
 Phazzer >> run [
+	| tempPackage |
+	tempPackage := self tools defaultTempPackage
+		asPackageIfAbsent: [ ^ self ].
+	tempPackage classes ifEmpty: [^ self].
 	config sandbox
 		ifTrue: [ self runSandboxedNotUIThread ]
 		ifFalse: [ self runAllInstalled ]
