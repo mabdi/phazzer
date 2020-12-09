@@ -131,7 +131,7 @@ Phazzer >> removeFinishedTests [
 			started
 				remove:
 					{(l at: 2).
-					(l at: 3)}.
+					(l at: 3)} ifAbsent: [].
 			self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
 	started
 		do: [ :l | 
