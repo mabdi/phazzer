@@ -11,7 +11,11 @@ BaselineOfPhazzer >> baseline: spec [
 		for: #common
 		do: [ spec
 				baseline: 'OSSubprocess'
-				with: [ spec repository: 'github://pharo-contributions/OSSubprocess:master/repository' ].
+				with: [ spec
+						repository: 'github://pharo-contributions/OSSubprocess:master/repository' ].
 			spec package: 'Phazzer' with: [ spec requires: #('OSSubprocess') ].
+			spec
+			package: 'Phazzer-Tests'
+			with: [ spec requires: #( 'Phazzer' ) ].
 			 ]
 ]

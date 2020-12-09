@@ -189,28 +189,27 @@ Phazzer >> runSandboxedNotUIThread [
 Phazzer >> runSandboxedWithPriority: priority [
 	| master_image |
 	master_image := FileLocator image pathString.
-	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
-	FileLocator image pathString = sandbox_image
-		ifTrue: [ ^ self ].
-	self sandBoxedSharedfileName exists
-		ifTrue: [ self sandBoxedSharedfileName delete ].
-	self sandBoxedSharedfileName writeStream close.
-	Smalltalk backupTo: sandbox_image.
+	self sandboxInit.
 	FileLocator image pathString = master_image
 		ifTrue: [ self
 				startSandboxAndWatchPriority: priority
 				OnFinish: self sandboxOnFinishOrCrash ].
-	FileLocator image pathString = sandbox_image
-		ifTrue: [ Semaphore new wait. self flag: #todo. "find a better way to kill this process safley in the sandbox"
-			"self
-				error:
-					'Its the sandboxed execution. I start running from Commandline handler'" ]
+	self flag: #todo. "we need to kill the rest of the process in the forked process (sandbox)"
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandBoxedSharedfileName [
 	^ (FileLocator imageDirectory / config sandboxSharedFile)
 		asFileReference
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxInit [
+	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
+	self sandBoxedSharedfileName exists
+		ifTrue: [ self sandBoxedSharedfileName delete ].
+	self sandBoxedSharedfileName writeStream close.
+	Smalltalk backupTo: sandbox_image
 ]
 
 { #category : #'as yet unclassified' }

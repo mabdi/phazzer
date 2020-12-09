@@ -33,12 +33,12 @@ PhazzerTest >> setUp [
 
 { #category : #running }
 PhazzerTest >> tearDown [
-	[| finalP |
+	 | finalP |
 	finalP := PzTools new defaultFinalPackage asPackage.
 	finalP classes
 		do: [ :x | 
 			x superclass = target
-				ifTrue: [ x removeFromSystem ] ]]
+				ifTrue: [ x removeFromSystem ] ] 
 ]
 
 { #category : #tests }
@@ -74,5 +74,9 @@ PhazzerTest >> testSandboxedFreeze [
 	finalP := tools defaultFinalPackage
 		asPackageIfAbsent: [ self deny: true ].
 	res := finalP classes select: [ :x | x superclass = target ].
-	self assert: res isNotEmpty
+	self assert: res isNotEmpty.
+	self
+		assert:
+			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
+				includesSubstring: 'true')
 ]
