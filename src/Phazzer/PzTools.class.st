@@ -57,11 +57,15 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 		^ answer asSortedCollection asOrderedCollection'."
 	(tempClass class allInstVarNames includes: #sandBoxedSharedfileName)
 		ifFalse: [ tempClass class addInstVarNamed: 'sandBoxedSharedfileName' ].
+	"(tempClass class selectors includes: #defaultTimeLimit)
+		ifFalse: [ tempClass class
+				pzCompile:
+					'defaultTimeLimit
+	^ 3 seconds ' ]."
 	tempClass class
-		pzCompile:
-			'defaultTimeLimit
-	^ 3 seconds '.
-	tempClass
+				pzCompile:
+					'defaultTimeLimit
+	^ 3 seconds '.tempClass
 		pzCompile:
 			'setUp
 	super setUp.

@@ -5,8 +5,8 @@ Class {
 }
 
 { #category : #accessing }
-PzFakeTest class >> defaultTimeLimit [
-	^ 10 seconds 
+PzFakeTest >> defaultTimeLimit [
+	^ 15 seconds
 ]
 
 { #category : #test }

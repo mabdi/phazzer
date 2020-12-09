@@ -69,7 +69,7 @@ Phazzer >> phazzClass: class [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> phazzMehtod: method [
+Phazzer >> phazzMethod: method [
 	self processTestMethod: method.
 	self run
 ]
@@ -132,7 +132,7 @@ Phazzer >> removeFinishedTests [
 
 { #category : #'as yet unclassified' }
 Phazzer >> requiresToStopSandbox [
-	| fileContent lines lastLine time |
+	| fileContent lines lastLine time noUpdates |
 	self sandBoxedSharedfileName exists
 		ifFalse: [ ^ false ].
 	fileContent := self sandBoxedSharedfileName.
@@ -143,13 +143,15 @@ Phazzer >> requiresToStopSandbox [
 		ifTrue: [ ^ false ].
 	lastLine := lines at: lines size - 1.
 	time := Time fromString: ((lastLine splitOn: ',') at: 1).
-	^ (Time now subtractTime: time) asSeconds > config freezeTimeOut
+	noUpdates := (Time now subtractTime: time) asSeconds.
+	('noUpdates: ' , noUpdates asString , '') traceCr.
+	^ noUpdates > config freezeTimeOut
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> run [
 	config sandbox
-		ifTrue: [ self runSandBoxed ]
+		ifTrue: [ self runSandboxedNotUIThread ]
 		ifFalse: [ self runAllInstalled ]
 ]
 
@@ -169,7 +171,8 @@ Phazzer >> runAllInstalled [
 					x isResumable
 						ifTrue: [ x resume ].
 					nil ] ]
-		displayingProgress: 'Test classes'
+		displayingProgress: 'Test classes'.
+	
 ]
 
 { #category : #'as yet unclassified' }
@@ -184,7 +187,7 @@ Phazzer >> runSandboxedNotUIThread [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runSandboxedWithPriority: priority [
-	| block master_image |
+	| master_image |
 	master_image := FileLocator image pathString.
 	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
 	FileLocator image pathString = sandbox_image
@@ -193,14 +196,12 @@ Phazzer >> runSandboxedWithPriority: priority [
 		ifTrue: [ self sandBoxedSharedfileName delete ].
 	self sandBoxedSharedfileName writeStream close.
 	Smalltalk backupTo: sandbox_image.
-	block := [ self
-		startSandboxAndWatchOnFinish: self sandboxOnFinishOrCrash ].
 	FileLocator image pathString = master_image
-		ifTrue:
-			[ priority ifNil: [ block value ] ifNotNil: [ block forkAt: priority ] ].
+		ifTrue: [ self
+				startSandboxAndWatchPriority: priority
+				OnFinish: self sandboxOnFinishOrCrash ].
 	FileLocator image pathString = sandbox_image
-		ifTrue: [ 
-			Semaphore new wait.
+		ifTrue: [ Semaphore new wait. self flag: #todo. "find a better way to kill this process safley in the sandbox"
 			"self
 				error:
 					'Its the sandboxed execution. I start running from Commandline handler'" ]
@@ -236,36 +237,38 @@ Phazzer >> sandboxStartCommand [
 		arguments:
 			{(sandbox_image , '.image').
 			PzCommandLineHandler commandName.
-			'--run'};
-		runAndWait
+			'--run'}.
+	process runAndWait
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxStopCommand [
-	process sigterm 
+	('killing pid: ' , process pid asString) traceCr.
+	process sigterm
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> startSandboxAndWatchOnFinish: aBlock [
+Phazzer >> startSandboxAndWatchPriority: priority OnFinish: aBlock [
 	| delay semaphorExecutor executor watcher |
-	delay := config freezeTimeOut seconds asDelay.
+	delay := 1 seconds asDelay.
 	semaphorExecutor := Semaphore new.
-	executor := [ [ [ self sandboxStartCommand.
-	semaphorExecutor signal ]
+	executor := [ [ [ self sandboxStartCommand ]
 		ensure: [ executor := nil.
-			delay delaySemaphore signal ] ]
+			delay delaySemaphore signal.
+			semaphorExecutor signal ] ]
 		on: Error
 		do: [ :ex | 
-			self halt.
+			'killing executor' traceCr.
 			self sandboxStopCommand.
 			semaphorExecutor signal ] ] newProcess.
+	executor priority: priority.
 	watcher := [ | goOn |
 	goOn := true.
 	[ goOn ]
 		whileTrue: [ self requiresToStopSandbox
-				ifTrue: [ self halt. executor ifNotNil: [ executor signalException: Error new ].
+				ifTrue: [ executor ifNotNil: [ executor signalException: Error new ].
 					goOn := false ]
-				ifFalse: [ delay := config freezeTimeOut seconds asDelay.
+				ifFalse: [ delay := 1 seconds asDelay.
 					delay wait ] ] ] newProcess.
 	watcher priority: executor priority + 1.
 	watcher resume.
