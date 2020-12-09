@@ -37,6 +37,7 @@ PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
 	result addAll: (self rename: versions).
 	result addAll: helperMethods.
 	^ result  ]
+
 		on: Error
 		do: [ :x | 
 			config debug

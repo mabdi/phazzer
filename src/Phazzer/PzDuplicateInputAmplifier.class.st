@@ -7,6 +7,7 @@ Class {
 { #category : #removing }
 PzDuplicateInputAmplifier >> amplifyInputs [
 	| results  |
+
 	results := OrderedCollection new.
 	aMethodAST statements
 		doWithIndex:

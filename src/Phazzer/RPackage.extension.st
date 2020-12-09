@@ -9,4 +9,5 @@ RPackage >> phazz [
 	self name = Phazzer package name
 		ifTrue: [ ^ self error: 'I cannot fuzz myself' ].
 	Phazzer new phazzPackage: self
+
 ]

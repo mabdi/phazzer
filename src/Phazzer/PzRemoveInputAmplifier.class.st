@@ -6,7 +6,9 @@ Class {
 
 { #category : #removing }
 PzRemoveInputAmplifier >> amplifyInputs [
+
 	| results |
+
 	results := OrderedCollection new.
 	aMethodAST statements size < 2
 		ifTrue: [ ^ results ].

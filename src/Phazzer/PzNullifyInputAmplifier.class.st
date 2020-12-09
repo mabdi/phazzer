@@ -7,6 +7,7 @@ Class {
 { #category : #removing }
 PzNullifyInputAmplifier >> amplifyInputs [
 	| results |
+
 	results := self nullifyMessageNodes: aMethodAST.
 	^ results collect: #formattedCode
 ]
