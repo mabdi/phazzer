@@ -6,7 +6,11 @@ Fuzzer for Pharo
 RPackage organizer packages do: #phazz
 ```
 
+
+# Fuzzing all tests in the image:
+
 ```smalltalk
 
-(Phazzer phazzPackage: 'Zinc-Tests')
+Phazzer hackThePlanet
 ```
+![](hacktheplanet.gif)
