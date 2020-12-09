@@ -9,8 +9,9 @@ RPackage organizer packages do: #phazz
 
 # Fuzzing all tests in the image:
 
-```smalltalk
+If you like to fuzz all tests installed in the image, run the following command:
 
+```smalltalk
 Phazzer hackThePlanet
 ```
-![https://giphy.com/explore/hack-the-planet](hacktheplanet.gif)
+![](hacktheplanet.gif "https://giphy.com/explore/hack-the-planet")
