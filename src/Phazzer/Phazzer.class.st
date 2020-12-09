@@ -247,7 +247,7 @@ Phazzer >> sandboxStartCommand [
 	process := OSSUnixSubprocess new
 		command: FileLocator vmBinary pathString;
 		arguments:
-			{(sandbox_image , '.image').
+			{'--headless'.(sandbox_image , '.image').
 			PzCommandLineHandler commandName.
 			'--run'}.
 	process runAndWait
