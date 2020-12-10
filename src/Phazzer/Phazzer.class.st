@@ -91,9 +91,14 @@ Phazzer >> phazzPackage: package [
 
 { #category : #'as yet unclassified' }
 Phazzer >> processPackage: package [
+	({self class package name.
+	#'Phazzer-Tests'.
+	self tools defaultTempPackage.
+	self tools defaultFinalPackage} includes: package name)
+		ifTrue: [ ^ self ].
 	(package definedClasses select: [ :cls | cls isTestCase ])
 		do: [ :cls | self processTestClass: cls ]
-		displayingProgress: 'Package ', package name
+		displayingProgress: 'Package ' , package name
 ]
 
 { #category : #'as yet unclassified' }
