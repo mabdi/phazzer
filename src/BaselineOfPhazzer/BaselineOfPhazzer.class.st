@@ -13,9 +13,9 @@ BaselineOfPhazzer >> baseline: spec [
 				baseline: 'OSSubprocess'
 				with: [ spec
 						repository: 'github://pharo-contributions/OSSubprocess:master/repository' ].
-			spec package: 'Phazzer' with: [ spec requires: #('OSSubprocess') ].
 			spec
-			package: 'Phazzer-Tests'
-			with: [ spec requires: #( 'Phazzer' ) ].
-			 ]
+				baseline: 'SQLite3'
+				with: [ spec repository: 'github://pharo-rdbms/Pharo-SQLite3/src' ].
+			spec package: 'Phazzer' with: [ spec requires: #('OSSubprocess' 'SQLite3') ].
+			spec package: 'Phazzer-Tests' with: [ spec requires: #('Phazzer') ] ]
 ]
