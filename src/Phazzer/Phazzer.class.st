@@ -139,11 +139,13 @@ Phazzer >> removeFinishedTests [
 	(finished sort: [ :a :b | a asString <= b asString ])
 		removeDuplicates.
 	finished
-		do: [ :l | started
+		do: [ :l | 
+			started
 				remove:
-					{(l at: 2).
-					(l at: 3)}
-				ifAbsent: [  ]. self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
+					{(l at: 1).
+					(l at: 2)}
+				ifAbsent: [  ].
+			self tools removeSelector: (l at: 2) inClass: (l at: 1) ].
 	started
 		do: [ :l | 
 			self tools moveToFinalSelector: (l at: 2) inClass: (l at: 1).
