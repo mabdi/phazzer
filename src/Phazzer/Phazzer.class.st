@@ -124,20 +124,26 @@ Phazzer >> removeAssertions: aTestMethod [
 
 { #category : #'as yet unclassified' }
 Phazzer >> removeFinishedTests [
-	| lines started |
+	| lines started finished |
 	lines := ((self sandBoxedSharedfileName contents splitOn: String cr)
 		reject: #isEmpty) collect: [ :x | x splitOn: ',' ].
 	started := (lines select: [ :l | (l at: 4) = PzTools startedTag ])
 		collect: [ :l | 
 			{(l at: 2).
 			(l at: 3)} ].
-	(lines select: [ :l | (l at: 4) = PzTools finishedTag ])
-		do: [ :l | 
-			started
+	finished := (lines select: [ :l | (l at: 4) = PzTools finishedTag ])
+		collect: [ :l | 
+			{(l at: 2).
+			(l at: 3)} ].
+	(started sort: [ :a :b | a asString <= b asString ]) removeDuplicates.
+	(finished sort: [ :a :b | a asString <= b asString ])
+		removeDuplicates.
+	finished
+		do: [ :l | started
 				remove:
 					{(l at: 2).
-					(l at: 3)} ifAbsent: [].
-			self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
+					(l at: 3)}
+				ifAbsent: [  ]. self tools removeSelector: (l at: 3) inClass: (l at: 2) ].
 	started
 		do: [ :l | 
 			self tools moveToFinalSelector: (l at: 2) inClass: (l at: 1).
