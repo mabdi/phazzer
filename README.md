@@ -25,4 +25,4 @@ If you like to fuzz all tests installed in the image, run the following command:
 ```smalltalk
 Phazzer hackThePlanet
 ```
-![](hacktheplanet.gif "https://giphy.com/explore/hack-the-planet")
+![](hacktheplanet.gif "https://giphy.com/gifs/14kdiJUblbWBXy")
