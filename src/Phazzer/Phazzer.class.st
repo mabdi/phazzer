@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'config',
 		'process',
-		'sandbox_image'
+		'sandbox_image',
+		'db'
 	],
 	#category : #Phazzer
 }
@@ -22,6 +23,11 @@ Phazzer class >> hackThePlanet [
 Phazzer class >> runAllInstalled [
 	^ self new
 		runAllInstalled
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer class >> runInSandbox [
+	^ self new runInSandbox
 ]
 
 { #category : #accessing }
@@ -47,7 +53,8 @@ Phazzer >> eventForTestAnnouncement [
 
 { #category : #initialization }
 Phazzer >> initialize [
-	config := PzConfig new
+	config := PzConfig new.
+	db := PzSqliteDb new.
 ]
 
 { #category : #'as yet unclassified' }
@@ -69,6 +76,33 @@ Phazzer >> install: testMethods base: aTestClass [
 	| tc |
 	tc := self tools buildTestClassWith: testMethods using: aTestClass.
 	^ {tc}
+]
+
+{ #category : #accessing }
+Phazzer >> installCount: aNumber [
+	| data |
+	data := db fetchTests: aNumber.
+	data
+		ifNotNil: [ data
+				do: [ :row | 
+					self
+						install: (row at: #testMethod)
+						base: (self class environment at: (row at: #baseClass)) ] ].
+	^ data size = aNumber
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> logTestFinished: aTestCase [
+	"self tools logTestFinished: aTestCase"
+
+	db logTestFinished: aTestCase
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> logTestStart: aTestCase [
+	"self tools logTestStart: aTestCase"
+
+	db logTestStart: aTestCase
 ]
 
 { #category : #'as yet unclassified' }
@@ -103,10 +137,12 @@ Phazzer >> processPackage: package [
 
 { #category : #'as yet unclassified' }
 Phazzer >> processTestClass: aTestClass [
+	(self checkClassIsProcessed: aTestClass)
+		ifFalse: [ ^ self ].
 	aTestClass allTestSelectors
 		do:
 			[ :selector | self processTestMethod: (aTestClass lookupSelector: selector) ]
-				displayingProgress: 'Class ' , aTestClass name
+		displayingProgress: 'Class ' , aTestClass name
 ]
 
 { #category : #'as yet unclassified' }
@@ -114,7 +150,7 @@ Phazzer >> processTestMethod: aTestMethod [
 	| t ts |
 	t := self removeAssertions: aTestMethod.
 	ts := self inputAmplify: t selector: aTestMethod selector.
-	self install: ts base: aTestMethod methodClass
+	db stashTestmethod: ts base: aTestMethod methodClass
 ]
 
 { #category : #'as yet unclassified' }
@@ -154,18 +190,10 @@ Phazzer >> removeFinishedTests [
 
 { #category : #'as yet unclassified' }
 Phazzer >> requiresToStopSandbox [
-	| fileContent lines lastLine time noUpdates |
-	self sandBoxedSharedfileName exists
-		ifFalse: [ ^ false ].
-	fileContent := self sandBoxedSharedfileName.
-	fileContent ifNil: [ ^ false ].
-	lines := fileContent contents splitOn: String cr.
-	lines ifNil: [ ^ false ].
-	lines size < 2
-		ifTrue: [ ^ false ].
-	lastLine := lines at: lines size - 1.
-	time := Time fromString: ((lastLine splitOn: ',') at: 1).
-	noUpdates := (Time now subtractTime: time) asSeconds.
+	| lastUpdate noUpdates |
+	lastUpdate := db lastUpdate.
+	lastUpdate isZero ifTrue: [ ^ false ].
+	noUpdates := DateAndTime now asUnixTime - lastUpdate.
 	('noUpdates: ' , noUpdates asString , '') traceCr.
 	^ noUpdates > config freezeTimeOut
 ]
@@ -188,7 +216,7 @@ Phazzer >> runAllInstalled [
 		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
 	testClasses
 		do: [ :cls | 
-			cls sandBoxedSharedfileName: self sandBoxedSharedfileName.
+			cls testEvents: self.
 			ts := cls buildSuite.
 			"ts when: TestAnnouncement do: self eventForTestAnnouncement."
 			[ ts := ts run ]
@@ -197,8 +225,12 @@ Phazzer >> runAllInstalled [
 					x isResumable
 						ifTrue: [ x resume ].
 					nil ] ]
-		displayingProgress: 'Test classes'.
-	
+		displayingProgress: 'Test classes'
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> runInSandbox [
+	[ self installCount: 10000 ] whileTrue: [ self runAllInstalled ]
 ]
 
 { #category : #'as yet unclassified' }

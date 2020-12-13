@@ -55,30 +55,31 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 		answer := Set withAll: self testSelectors.
 		answer addAll: self superclass allTestSelectors.
 		^ answer asSortedCollection asOrderedCollection'."
-	(tempClass class allInstVarNames includes: #sandBoxedSharedfileName)
-		ifFalse: [ tempClass class addInstVarNamed: 'sandBoxedSharedfileName' ].
+	(tempClass class allInstVarNames includes: #testEvents)
+		ifFalse: [ tempClass class addInstVarNamed: 'testEvents' ].
 	"(tempClass class selectors includes: #defaultTimeLimit)
 		ifFalse: [ tempClass class
 				pzCompile:
 					'defaultTimeLimit
 	^ 3 seconds ' ]."
 	tempClass class
-				pzCompile:
-					'defaultTimeLimit
-	^ 3 seconds '.tempClass
+		pzCompile:
+			'defaultTimeLimit
+	^ 3 seconds '.
+	tempClass
 		pzCompile:
 			'setUp
 	super setUp.
-	' , self class name asString , ' new logTestStart: self '.
+	testEvents logTestStart: self '.
 	tempClass
 		pzCompile:
 			'tearDown
 	super tearDown.
-	' , self class name asString , ' new logTestFinished: self'.
+	testEvents logTestFinished: self'.
 	tempClass class
-		pzCompile: 'sandBoxedSharedfileName ^ sandBoxedSharedfileName'.
+		pzCompile: 'testEvents ^ testEvents'.
 	tempClass class
-		pzCompile: 'sandBoxedSharedfileName: aFile sandBoxedSharedfileName := aFile'.
+		pzCompile: 'testEvents: aTestEvents testEvents := aTestEvents'.
 	aCollection
 		do: [ :item | 
 			| ast |

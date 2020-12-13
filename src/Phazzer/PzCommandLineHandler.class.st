@@ -19,10 +19,8 @@ PzCommandLineHandler >> activate [
 	self activateHelp
 		ifTrue: [ ^ self ].
 	(self hasOption: 'run')
-		ifTrue: [ self flagExecuted.
-			
-			Phazzer runAllInstalled.
-			Smalltalk snapshot: false andQuit: true ]
+		ifFalse: [ self runInSandbox ].
+	
 ]
 
 { #category : #activation }
@@ -31,4 +29,10 @@ PzCommandLineHandler >> flagExecuted [
 		nextPutAll: 'executed cmdHandler';
 		cr;
 		close.
+]
+
+{ #category : #activation }
+PzCommandLineHandler >> runInSandbox [
+Phazzer runInSandbox.
+	Smalltalk snapshot: false andQuit: true
 ]
