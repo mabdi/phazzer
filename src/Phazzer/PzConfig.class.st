@@ -6,7 +6,7 @@ Class {
 		'debug',
 		'freezeTimeOut',
 		'sandbox',
-		'sandboxSharedFile'
+		'dbName'
 	],
 	#category : #Phazzer
 }
@@ -42,6 +42,16 @@ PzConfig >> amps: anObject [
 	amps := anObject
 ]
 
+{ #category : #accessing }
+PzConfig >> dbName [
+	^ dbName ifNil: [ self defaultValues: #dbName ]
+]
+
+{ #category : #accessing }
+PzConfig >> dbName: anObject [
+	dbName := anObject
+]
+
 { #category : #'as yet unclassified' }
 PzConfig >> debug [
 	^ debug ifNil: [ self defaultValues: #debug ]
@@ -57,7 +67,7 @@ PzConfig >> defaultValues: key [
 	^ {(#amps -> PzAbstractInputAmplifier subclasses).
 	(#freezeTimeOut -> 5).
 	(#sandbox -> true).
-	(#sandboxSharedFile -> 'sandbox-done-tests.txt').
+	(#dbName -> 'phazzer.db').
 	(#debug -> true)} asDictionary at: key
 ]
 
@@ -79,14 +89,4 @@ PzConfig >> sandbox [
 { #category : #accessing }
 PzConfig >> sandbox: anObject [
 	sandbox := anObject
-]
-
-{ #category : #accessing }
-PzConfig >> sandboxSharedFile [
-	^ sandboxSharedFile ifNil: [ self defaultValues: #sandboxSharedFile ]
-]
-
-{ #category : #accessing }
-PzConfig >> sandboxSharedFile: anObject [
-	sandboxSharedFile := anObject
 ]

@@ -122,38 +122,6 @@ PzTools >> getId [
 ]
 
 { #category : #'as yet unclassified' }
-PzTools >> logTestFinished: x [
-	| str |
-	str := ','
-		join:
-			{Time now print24.
-			x class name.
-			x selector.
-			self class finishedTag}.
-	x class sandBoxedSharedfileName writeStream
-		setToEnd;
-		nextPutAll: str;
-		cr;
-		close
-]
-
-{ #category : #'as yet unclassified' }
-PzTools >> logTestStart: x [
-	| str |
-	str := ','
-		join:
-			{Time now print24.
-			x class name.
-			x selector.
-			self class startedTag}.
-	x class sandBoxedSharedfileName writeStream
-		setToEnd;
-		nextPutAll: str;
-		cr;
-		close
-]
-
-{ #category : #'as yet unclassified' }
 PzTools >> moveToFinalSelector: selector inClass: className [
 	| tcls mtd cls |
 	tcls := nil.

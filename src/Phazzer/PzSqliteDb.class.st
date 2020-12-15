@@ -7,6 +7,14 @@ Class {
 	#category : #Phazzer
 }
 
+{ #category : #accessing }
+PzSqliteDb class >> named: aName [
+	^ self new
+		dbName: aName;
+		initDb;
+		yourself
+]
+
 { #category : #'as yet unclassified' }
 PzSqliteDb class >> stateForCreated [
 	^ 0
@@ -30,6 +38,17 @@ PzSqliteDb class >> stateForProcessed [
 { #category : #'as yet unclassified' }
 PzSqliteDb class >> stateForStarted [
 	^ 2
+]
+
+{ #category : #'as yet unclassified' }
+PzSqliteDb >> anyUnFinishedLeft [
+	^ self
+		execDb: [ :db | 
+			(db
+				execute: 'select * from tests where status not in (?, ?)'
+				with:
+					{self class stateForFinished.
+					self class stateForProcessed}) rows isNotEmpty ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -80,6 +99,15 @@ PzSqliteDb >> createTableTests [
 { #category : #'as yet unclassified' }
 PzSqliteDb >> dbName: aName [
 	dbName := aName
+]
+
+{ #category : #'as yet unclassified' }
+PzSqliteDb >> execDb: aBlock [
+	| db |
+	db := self getDb.
+	db open.
+	^ [ aBlock value: db ]
+		ensure: [ db close ]
 ]
 
 { #category : #accessing }

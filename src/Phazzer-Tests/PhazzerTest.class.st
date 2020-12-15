@@ -32,28 +32,28 @@ PhazzerTest >> setUp [
 
 { #category : #running }
 PhazzerTest >> tearDown [
-	 | finalP |
+	[| finalP |
 	finalP := PzTools new defaultFinalPackage asPackage.
 	finalP classes
 		do: [ :x | 
 			x superclass = target
-				ifTrue: [ x removeFromSystem ] ] 
+				ifTrue: [ x removeFromSystem ] ]]
 ]
 
 { #category : #tests }
 PhazzerTest >> testSandboxedCrash [
-	| cnf res finalP |
+	| cnf res finalP pz |
 	cnf := PzConfig new.
 	cnf sandbox: true.
-	cnf freezeTimeOut: 10000.
+	cnf dbName: 'testDb.db'.
 	cnf
 		amps:
 			{PzDspotLiteralInputAmplifier.
 			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
-	Phazzer new
-		config: cnf;
-		phazzMethod: target >> #testFakeCrash.
+	pz := Phazzer new.
+	pz config: cnf.
+	pz phazzMethod: target >> #testFakeCrash.
 	self assertEmpty: tools defaultTempPackage asPackage classes.
 	finalP := tools defaultFinalPackage
 		asPackageIfAbsent: [ self deny: true ].
@@ -62,18 +62,21 @@ PhazzerTest >> testSandboxedCrash [
 	self
 		assert:
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
-				includesSubstring: 'true')
+				includesSubstring: 'true').
+	self deny: pz db anyUnFinishedLeft.
+	(PzSqliteDb named: cnf dbName) purgeDb 
 ]
 
 { #category : #tests }
 PhazzerTest >> testSandboxedFreeze [
-	| cnf res finalP |
+	| cnf res finalP pz |
 	cnf := PzConfig new.
 	cnf sandbox: true.
 	cnf amps: {PzDspotLiteralInputAmplifier}.
 	cnf freezeTimeOut: 5.
-	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
-	Phazzer new
+	cnf dbName: 'testDb.db'.
+	pz := Phazzer new.
+	pz
 		config: cnf;
 		phazzMethod: target >> #testFakeFreeze.
 	self assertEmpty: tools defaultTempPackage asPackage classes.
@@ -84,5 +87,7 @@ PhazzerTest >> testSandboxedFreeze [
 	self
 		assert:
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
-				includesSubstring: 'true')
+				includesSubstring: 'true').
+	self deny: pz db anyUnFinishedLeft.
+	(PzSqliteDb named: cnf dbName) purgeDb
 ]

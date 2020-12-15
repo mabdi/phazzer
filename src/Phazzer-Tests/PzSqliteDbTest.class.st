@@ -39,8 +39,7 @@ PzSqliteDbTest >> setUp [
 
 { #category : #running }
 PzSqliteDbTest >> tearDown [
-	"db purgeDb"
-
+	db purgeDb
 	
 ]
 

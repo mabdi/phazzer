@@ -32,30 +32,23 @@ Phazzer class >> runInSandbox [
 
 { #category : #accessing }
 Phazzer >> config: aConfig [
-	config:= aConfig
+	config := aConfig.
+	self initDb
 ]
 
-{ #category : #'as yet unclassified' }
-Phazzer >> eventForTestAnnouncement [
-	| str |
-	^ [ :x | 
-	str := ','
-		join:
-			{Time nowUTC print24.
-			x test class name.
-			x test selector}.
-	self sandBoxedSharedfileName writeStream
-		setToEnd;
-		nextPutAll: str;
-		cr;
-		close ]
+{ #category : #accessing }
+Phazzer >> db [ 
+	^ db
+]
+
+{ #category : #state }
+Phazzer >> initDb [
+	db := PzSqliteDb named: config dbName
 ]
 
 { #category : #initialization }
 Phazzer >> initialize [
-	config := PzConfig new.
-	db := PzSqliteDb new.
-	db initDb
+	self config: PzConfig new.
 ]
 
 { #category : #'as yet unclassified' }
@@ -173,7 +166,7 @@ Phazzer >> removeFinishedTests [
 			self tools
 				buildFinalTestClassWith: {(l at: #testMethod)}
 				using: (self class environment at: (l at: #baseClass) asSymbol).
-			db flagAsProcessed: (l at: #rowId) ].
+			db flagAsProcessed: (l at: #rowid) ].
 	db flagAllInstalledAsCreated.
 	self flag: #todo	"dont create new class for each test method. pack it in classes"
 ]
@@ -220,6 +213,12 @@ Phazzer >> runAllInstalled [
 ]
 
 { #category : #'as yet unclassified' }
+Phazzer >> runIfAnyTestsLeft [
+	db anyUnFinishedLeft
+		ifTrue: [ self run ]
+]
+
+{ #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
 	[ (self installCount: 5000) > 0 ]
 		whileTrue: [ self runAllInstalled ]
@@ -243,7 +242,7 @@ Phazzer >> runSandboxedWithPriority: priority [
 	FileLocator image pathString = master_image
 		ifTrue: [ self
 				startSandboxAndWatchPriority: priority
-				OnFinish: self sandboxOnFinishOrCrash ].
+				OnFinish: (self sandboxOnFinishOrCrash: priority)  ].
 	FileLocator image pathString = sandbox_image
 		ifTrue: [ PzContinueInSandbox new signal ]
 ]
@@ -257,20 +256,23 @@ Phazzer >> sandBoxedSharedfileName [
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxInit [
 	sandbox_image := FileLocator imageDirectory pathString , '/sandbox'.
-	self sandBoxedSharedfileName exists
-		ifTrue: [ self sandBoxedSharedfileName delete ].
-	self sandBoxedSharedfileName writeStream close.
 	Smalltalk backupTo: sandbox_image
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxOnFinishOrCrash [
-	| testClasses |
+	
 	^ [ self removeFinishedTests.
-	testClasses := (self tools defaultTempPackage
-		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
-	(testClasses anySatisfy: [ :cls | cls testSelectors isNotEmpty ])
-		ifTrue: [ self run ] ]
+	self runIfAnyTestsLeft ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxOnFinishOrCrash: priority [
+	^ [ self removeFinishedTests.
+	db anyUnFinishedLeft
+		ifTrue: [self
+		startSandboxAndWatchPriority: priority
+		OnFinish: (self sandboxOnFinishOrCrash: priority)] ]
 ]
 
 { #category : #'as yet unclassified' }
