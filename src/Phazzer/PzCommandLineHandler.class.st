@@ -36,7 +36,6 @@ PzCommandLineHandler >> runInSandbox [
 	self arguments
 		detect: [ :arg | arg beginsWith: '--run=' ]
 		ifFound: [ :arg | dbName := arg allButFirst: '--run=' size ].
-	
 	Phazzer runInSandbox: dbName.
 	Smalltalk snapshot: false andQuit: true
 ]

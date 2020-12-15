@@ -231,7 +231,7 @@ PzSqliteDb >> logAnUpdate [
 			'UPDATE globals
 SET value = ?
 WHERE key = "lastUpdate"'
-		value: DateAndTime now asUnixTime asString ]
+		value: DateAndTime now asUnixTime ]
 		ensure: [ db close ]
 ]
 
@@ -277,6 +277,20 @@ PzSqliteDb >> purgeDb [
 	db open.
 	[ db execute: 'DROP TABLE IF EXISTS tests;'.
 	db execute: 'DROP TABLE IF EXISTS globals;' ]
+		ensure: [ db close ]
+]
+
+{ #category : #'as yet unclassified' }
+PzSqliteDb >> resetLastUpdate [
+	| db |
+	db := self getDb.
+	db open.
+	[ db
+		execute:
+			'UPDATE globals
+SET value = 0
+WHERE key = "lastUpdate"'
+		]
 		ensure: [ db close ]
 ]
 

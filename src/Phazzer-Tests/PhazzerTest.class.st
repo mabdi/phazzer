@@ -51,6 +51,8 @@ PhazzerTest >> testSandboxedCrash [
 			{PzDspotLiteralInputAmplifier.
 			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
+	
+	(PzSqliteDb named: cnf dbName) purgeDb purgeDb; initDb.
 	pz := Phazzer new.
 	pz config: cnf.
 	pz phazzMethod: target >> #testFakeCrash.
@@ -64,7 +66,7 @@ PhazzerTest >> testSandboxedCrash [
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
 	self deny: pz db anyUnFinishedLeft.
-	(PzSqliteDb named: cnf dbName) purgeDb 
+	(PzSqliteDb named: cnf dbName) purgeDb
 ]
 
 { #category : #tests }

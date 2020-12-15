@@ -186,7 +186,6 @@ Phazzer >> removeFinishedTests [
 Phazzer >> requiresToStopSandbox [
 	| lastUpdate noUpdates |
 	lastUpdate := db lastUpdate.
-	lastUpdate asString traceCr.
 	lastUpdate isZero
 		ifTrue: [ ^ false ].
 	noUpdates := DateAndTime now asUnixTime - lastUpdate.
@@ -212,7 +211,6 @@ Phazzer >> runAllInstalled [
 	testClasses ifEmpty: [ ^ self ].
 	testClasses
 		do: [ :cls | 
-			self halt.
 			cls testEvents: self.
 			ts := cls buildSuite.
 			"ts when: TestAnnouncement do: self eventForTestAnnouncement."
@@ -286,13 +284,13 @@ Phazzer >> sandboxOnFinishOrCrash: priority [
 Phazzer >> sandboxStartCommand [
 	| headless |
 	"headless := '--headless'."
+	'Sandbox started' traceCr.
 	process := OSSUnixSubprocess new
 		command: FileLocator vmBinary pathString;
 		arguments:
-			{
-			(sandbox_image , '.image').
+			{(sandbox_image , '.image').
 			PzCommandLineHandler commandName.
-			'--run'}.
+			('--run=' , config dbName)}.
 	process runAndWait
 ]
 
@@ -307,6 +305,7 @@ Phazzer >> startSandboxAndWatchPriority: priority OnFinish: aBlock [
 	| delay semaphorExecutor executor watcher |
 	delay := 1 seconds asDelay.
 	semaphorExecutor := Semaphore new.
+	db resetLastUpdate.
 	executor := [ [ [ self sandboxStartCommand ]
 		ensure: [ executor := nil.
 			delay delaySemaphore signal.
