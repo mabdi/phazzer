@@ -77,6 +77,9 @@ PhazzerTest >> testSandboxedFreeze [
 	cnf amps: {PzDspotLiteralInputAmplifier}.
 	cnf freezeTimeOut: 5.
 	cnf dbName: 'testDb.db'.
+	(PzSqliteDb named: cnf dbName) purgeDb
+		purgeDb;
+		initDb.
 	pz := Phazzer new.
 	pz
 		config: cnf;
