@@ -55,6 +55,7 @@ Phazzer >> eventForTestAnnouncement [
 Phazzer >> initialize [
 	config := PzConfig new.
 	db := PzSqliteDb new.
+	db initDb
 ]
 
 { #category : #'as yet unclassified' }
@@ -200,20 +201,21 @@ Phazzer >> requiresToStopSandbox [
 
 { #category : #'as yet unclassified' }
 Phazzer >> run [
-	| tempPackage |
-	tempPackage := self tools defaultTempPackage
-		asPackageIfAbsent: [ ^ self ].
-	tempPackage classes ifEmpty: [^ self].
-	config sandbox
+	[ config sandbox
 		ifTrue: [ self runSandboxedNotUIThread ]
-		ifFalse: [ self runAllInstalled ]
+		ifFalse: [ self runAllInstalled ] ]
+		on: PzContinueInSandbox
+		do: [ :x | x pass ]
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> runAllInstalled [
-	| testClasses ts |
-	testClasses := (self tools defaultTempPackage
-		asPackageIfAbsent: [ self error: 'No test in queue' ]) classes.
+	| tempPackage testClasses ts |
+	self halt.
+	tempPackage := self tools defaultTempPackage
+		asPackageIfAbsent: [ ^ self ].
+	testClasses := tempPackage classes.
+	testClasses ifEmpty: [ ^ self ].
 	testClasses
 		do: [ :cls | 
 			cls testEvents: self.
@@ -230,6 +232,7 @@ Phazzer >> runAllInstalled [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
+	
 	[ self installCount: 10000 ] whileTrue: [ self runAllInstalled ]
 ]
 
@@ -252,7 +255,8 @@ Phazzer >> runSandboxedWithPriority: priority [
 		ifTrue: [ self
 				startSandboxAndWatchPriority: priority
 				OnFinish: self sandboxOnFinishOrCrash ].
-	self flag: #todo. "we need to kill the rest of the process in the forked process (sandbox)"
+	FileLocator image pathString = sandbox_image
+		ifTrue: [ PzContinueInSandbox new signal ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -282,17 +286,13 @@ Phazzer >> sandboxOnFinishOrCrash [
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxStartCommand [
-	[ process := OSSUnixSubprocess new
-		command: FileLocator vmBinary pathString;
-		arguments:
-			{'--headless'.
-			(sandbox_image , '.image').
-			PzCommandLineHandler commandName.
-			'--run'} ].
+	| headless |
+	"headless := '--headless'."
 	process := OSSUnixSubprocess new
 		command: FileLocator vmBinary pathString;
 		arguments:
-			{'--headless'.(sandbox_image , '.image').
+			{
+			(sandbox_image , '.image').
 			PzCommandLineHandler commandName.
 			'--run'}.
 	process runAndWait

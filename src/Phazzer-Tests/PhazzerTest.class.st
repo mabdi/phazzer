@@ -20,15 +20,14 @@ PhazzerTest >> setUp [
 	| finalP |
 	target := PzFakeTest.
 	tools := PzTools new.
-	
+	PzSqliteDb new purgeDb.
 	finalP := tools defaultFinalPackage asPackageIfAbsent: [ nil ].
 	finalP
 		ifNotNil: [ finalP classes
 				do: [ :x | 
 					x superclass = target
 						ifTrue: [ x removeFromSystem ] ] ].
-	PzTools new clearTempClasses.
-	
+	PzTools new clearTempClasses
 ]
 
 { #category : #running }
@@ -46,7 +45,7 @@ PhazzerTest >> testSandboxedCrash [
 	| cnf res finalP |
 	cnf := PzConfig new.
 	cnf sandbox: true.
-	cnf amps: {PzDspotLiteralInputAmplifier}.
+	cnf amps: {PzDspotLiteralInputAmplifier. PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
 	Phazzer new
 		config: cnf;

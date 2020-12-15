@@ -151,21 +151,25 @@ PzSqliteDb >> purgeDb [
 	| db |
 	db := self getDb.
 	db open.
-	[ db
-		execute:
-			'DROP TABLE IF EXISTS tests;' ]
+	[ db execute: 'DROP TABLE IF EXISTS tests;'.
+	db execute: 'DROP TABLE IF EXISTS globals;' ]
 		ensure: [ db close ]
 ]
 
 { #category : #'as yet unclassified' }
-PzSqliteDb >> stashTestmethod: sourceCode base: class [
+PzSqliteDb >> stashTestmethod: sourceCodes base: class [
 	| db |
 	db := self getDb.
 	db open.
-	[db
-		execute:
-			'INSERT INTO tests(baseClass,testMethod,status) VALUES (:baseClass,:method,:status);'
-		with:
-			{(':baseClass' -> class name).
-			((':method' -> sourceCode , ':status') -> '')}] ensure: [ db close ]
+	[ sourceCodes
+		do: [ :sourceCode | 
+			
+			db
+				execute:
+					'INSERT INTO tests(baseClass,testMethod,status) VALUES (:baseClass,:method,:status);'
+				with:
+					{(':baseClass' -> class name).
+					(':method' -> sourceCode).
+					(':status' -> 0)} asDictionary ] ]
+		ensure: [ db close ]
 ]

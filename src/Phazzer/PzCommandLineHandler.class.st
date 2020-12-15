@@ -19,8 +19,7 @@ PzCommandLineHandler >> activate [
 	self activateHelp
 		ifTrue: [ ^ self ].
 	(self hasOption: 'run')
-		ifFalse: [ self runInSandbox ].
-	
+		ifTrue: [ self runInSandbox ]
 ]
 
 { #category : #activation }
