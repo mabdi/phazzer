@@ -81,15 +81,20 @@ Phazzer >> install: testMethods base: aTestClass [
 
 { #category : #accessing }
 Phazzer >> installCount: aNumber [
-	| data |
+	| data classes m |
 	data := db fetchTests: aNumber.
+	data ifNil: [ ^ 0 ].
+	classes := Dictionary new.
 	data
-		ifNotNil: [ data
-				do: [ :row | 
-					self
-						install: (row at: #testMethod)
-						base: (self class environment at: (row at: #baseClass)) ] ].
-	^ data size = aNumber
+		do: [ :row | 
+			m := classes
+				at: (row at: #baseClass) asSymbol
+				ifAbsentPut: [ OrderedCollection new ].
+			m add: (row at: #testMethod) ].
+	classes
+		keysAndValuesDo:
+			[ :key :value | self install: value base: (self class environment at: key) ].
+	^ data size
 ]
 
 { #category : #'as yet unclassified' }
@@ -161,39 +166,23 @@ Phazzer >> removeAssertions: aTestMethod [
 
 { #category : #'as yet unclassified' }
 Phazzer >> removeFinishedTests [
-	| lines started finished |
-	lines := ((self sandBoxedSharedfileName contents splitOn: String cr)
-		reject: #isEmpty) collect: [ :x | x splitOn: ',' ].
-	started := (lines select: [ :l | (l at: 4) = PzTools startedTag ])
-		collect: [ :l | 
-			{(l at: 2).
-			(l at: 3)} ].
-	finished := (lines select: [ :l | (l at: 4) = PzTools finishedTag ])
-		collect: [ :l | 
-			{(l at: 2).
-			(l at: 3)} ].
-	(started sort: [ :a :b | a asString <= b asString ]) removeDuplicates.
-	(finished sort: [ :a :b | a asString <= b asString ])
-		removeDuplicates.
-	finished
+	| unfinished |
+	unfinished := db getNotFinished.
+	unfinished
 		do: [ :l | 
-			started
-				remove:
-					{(l at: 1).
-					(l at: 2)}
-				ifAbsent: [  ].
-			self tools removeSelector: (l at: 2) inClass: (l at: 1) ].
-	started
-		do: [ :l | 
-			self tools moveToFinalSelector: (l at: 2) inClass: (l at: 1).
-			self tools removeSelector: (l at: 2) inClass: (l at: 1) ]
+			self tools
+				buildFinalTestClassWith: {(l at: #testMethod)}
+				using: (self class environment at: (l at: #baseClass) asSymbol).
+			db flagAsProcessed: (l at: #rowId) ].
+	db flagAllInstalledAsCreated.
+	self flag: #todo	"dont create new class for each test method. pack it in classes"
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> requiresToStopSandbox [
 	| lastUpdate noUpdates |
 	lastUpdate := db lastUpdate.
-	lastUpdate isZero ifTrue: [ ^ false ].
+	lastUpdate asInteger isZero ifTrue: [ ^ false ].
 	noUpdates := DateAndTime now asUnixTime - lastUpdate.
 	('noUpdates: ' , noUpdates asString , '') traceCr.
 	^ noUpdates > config freezeTimeOut
@@ -211,7 +200,7 @@ Phazzer >> run [
 { #category : #'as yet unclassified' }
 Phazzer >> runAllInstalled [
 	| tempPackage testClasses ts |
-	self halt.
+	
 	tempPackage := self tools defaultTempPackage
 		asPackageIfAbsent: [ ^ self ].
 	testClasses := tempPackage classes.
@@ -232,8 +221,8 @@ Phazzer >> runAllInstalled [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
-	
-	[ self installCount: 10000 ] whileTrue: [ self runAllInstalled ]
+	[ (self installCount: 5000) > 0 ]
+		whileTrue: [ self runAllInstalled ]
 ]
 
 { #category : #'as yet unclassified' }

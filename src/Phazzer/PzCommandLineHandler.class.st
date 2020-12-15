@@ -32,6 +32,8 @@ PzCommandLineHandler >> flagExecuted [
 
 { #category : #activation }
 PzCommandLineHandler >> runInSandbox [
-Phazzer runInSandbox.
-	Smalltalk snapshot: false andQuit: true
+	self halt.
+	Phazzer runInSandbox.
+	self halt.
+	"Smalltalk snapshot: false andQuit: true"
 ]

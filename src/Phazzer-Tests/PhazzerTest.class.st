@@ -45,7 +45,11 @@ PhazzerTest >> testSandboxedCrash [
 	| cnf res finalP |
 	cnf := PzConfig new.
 	cnf sandbox: true.
-	cnf amps: {PzDspotLiteralInputAmplifier. PzDuplicateInputAmplifier}.
+	cnf freezeTimeOut: 10000.
+	cnf
+		amps:
+			{PzDspotLiteralInputAmplifier.
+			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
 	Phazzer new
 		config: cnf;
@@ -55,7 +59,10 @@ PhazzerTest >> testSandboxedCrash [
 		asPackageIfAbsent: [ self deny: true ].
 	res := finalP classes select: [ :x | x superclass = target ].
 	self assert: res isNotEmpty.
-	self assert: (((res asOrderedCollection at:1) methods at:1) sourceCode includesSubstring: 'true')
+	self
+		assert:
+			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
+				includesSubstring: 'true')
 ]
 
 { #category : #tests }

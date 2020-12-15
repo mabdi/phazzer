@@ -66,20 +66,21 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 		pzCompile:
 			'defaultTimeLimit
 	^ 3 seconds '.
+	tempClass class pzCompile: 'testEvents ^ testEvents'.
+	tempClass class
+		pzCompile: 'testEvents: aTestEvents testEvents := aTestEvents'.
+	
 	tempClass
 		pzCompile:
 			'setUp
 	super setUp.
-	testEvents logTestStart: self '.
+	self class testEvents logTestStart: self '.
 	tempClass
 		pzCompile:
 			'tearDown
 	super tearDown.
-	testEvents logTestFinished: self'.
-	tempClass class
-		pzCompile: 'testEvents ^ testEvents'.
-	tempClass class
-		pzCompile: 'testEvents: aTestEvents testEvents := aTestEvents'.
+	self class testEvents logTestFinished: self'.
+	
 	aCollection
 		do: [ :item | 
 			| ast |
