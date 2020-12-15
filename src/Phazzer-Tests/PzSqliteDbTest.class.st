@@ -76,6 +76,13 @@ PzSqliteDbTest >> testFlagAsProcessed [
 		equals: PzSqliteDb stateForProcessed
 ]
 
+{ #category : #test }
+PzSqliteDbTest >> testLastUpdate [
+	self assert: db lastUpdate asInteger equals: 0.
+	db logAnUpdate.
+	self deny: db lastUpdate asInteger equals: 0.
+]
+
 { #category : #tests }
 PzSqliteDbTest >> testMethodAdd [
 	| row fakeTest |

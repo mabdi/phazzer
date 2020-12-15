@@ -30,6 +30,16 @@ Phazzer class >> runInSandbox [
 	^ self new runInSandbox
 ]
 
+{ #category : #'as yet unclassified' }
+Phazzer class >> runInSandbox: dbName [
+	| cnf |
+	cnf := PzConfig new.
+	cnf dbName: dbName.
+	^ self new
+		config: cnf;
+		runInSandbox
+]
+
 { #category : #accessing }
 Phazzer >> config: aConfig [
 	config := aConfig.
@@ -101,7 +111,8 @@ Phazzer >> logTestFinished: aTestCase [
 Phazzer >> logTestStart: aTestCase [
 	"self tools logTestStart: aTestCase"
 
-	db logTestStart: aTestCase
+	db logTestStart: aTestCase.
+	db logAnUpdate.
 ]
 
 { #category : #'as yet unclassified' }
@@ -175,7 +186,9 @@ Phazzer >> removeFinishedTests [
 Phazzer >> requiresToStopSandbox [
 	| lastUpdate noUpdates |
 	lastUpdate := db lastUpdate.
-	lastUpdate asInteger isZero ifTrue: [ ^ false ].
+	lastUpdate asString traceCr.
+	lastUpdate isZero
+		ifTrue: [ ^ false ].
 	noUpdates := DateAndTime now asUnixTime - lastUpdate.
 	('noUpdates: ' , noUpdates asString , '') traceCr.
 	^ noUpdates > config freezeTimeOut
@@ -193,13 +206,13 @@ Phazzer >> run [
 { #category : #'as yet unclassified' }
 Phazzer >> runAllInstalled [
 	| tempPackage testClasses ts |
-	
 	tempPackage := self tools defaultTempPackage
 		asPackageIfAbsent: [ ^ self ].
 	testClasses := tempPackage classes.
 	testClasses ifEmpty: [ ^ self ].
 	testClasses
 		do: [ :cls | 
+			self halt.
 			cls testEvents: self.
 			ts := cls buildSuite.
 			"ts when: TestAnnouncement do: self eventForTestAnnouncement."
@@ -245,12 +258,6 @@ Phazzer >> runSandboxedWithPriority: priority [
 				OnFinish: (self sandboxOnFinishOrCrash: priority)  ].
 	FileLocator image pathString = sandbox_image
 		ifTrue: [ PzContinueInSandbox new signal ]
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> sandBoxedSharedfileName [
-	^ (FileLocator imageDirectory / config sandboxSharedFile)
-		asFileReference
 ]
 
 { #category : #'as yet unclassified' }

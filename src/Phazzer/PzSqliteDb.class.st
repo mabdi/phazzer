@@ -211,14 +211,14 @@ PzSqliteDb >> lastUpdate [
 	| db c data |
 	db := self getDb.
 	db open.
-	data :=  [ c := db
+	data := [ c := db
 		execute:
 			'select value from globals
 WHERE key = "lastUpdate"'.
 	c rows ]
 		ensure: [ db close ].
 	data ifEmpty: [ ^ 0 ].
-	^ (data at: 1) at: #value
+	^ ((data at: 1) at: #value) asInteger
 ]
 
 { #category : #'as yet unclassified' }
