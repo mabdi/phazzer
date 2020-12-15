@@ -6,7 +6,8 @@ Class {
 		'debug',
 		'freezeTimeOut',
 		'sandbox',
-		'dbName'
+		'dbName',
+		'headless'
 	],
 	#category : #Phazzer
 }
@@ -68,6 +69,7 @@ PzConfig >> defaultValues: key [
 	(#freezeTimeOut -> 5).
 	(#sandbox -> true).
 	(#dbName -> 'phazzer.db').
+	(#headless -> true).
 	(#debug -> true)} asDictionary at: key
 ]
 
@@ -79,6 +81,16 @@ PzConfig >> freezeTimeOut [
 { #category : #accessing }
 PzConfig >> freezeTimeOut: anObject [
 	freezeTimeOut := anObject
+]
+
+{ #category : #accessing }
+PzConfig >> headless [
+	^ headless  ifNil: [ self defaultValues: #headless ]
+]
+
+{ #category : #accessing }
+PzConfig >> headless: anObject [
+	headless := anObject
 ]
 
 { #category : #accessing }

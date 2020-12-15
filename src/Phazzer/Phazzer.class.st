@@ -282,15 +282,21 @@ Phazzer >> sandboxOnFinishOrCrash: priority [
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxStartCommand [
-	| headless |
+	| args |
 	"headless := '--headless'."
 	'Sandbox started' traceCr.
-	process := OSSUnixSubprocess new
-		command: FileLocator vmBinary pathString;
-		arguments:
+	args := OrderedCollection new.
+	args
+		addAll:
 			{(sandbox_image , '.image').
 			PzCommandLineHandler commandName.
 			('--run=' , config dbName)}.
+	config headless
+		ifTrue: [ args addFirst: '--headless' ].
+	args asString traceCr.
+	process := OSSUnixSubprocess new
+		command: FileLocator vmBinary pathString;
+		arguments: args.
 	process runAndWait
 ]
 
