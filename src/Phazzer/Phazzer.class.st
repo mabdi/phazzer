@@ -11,12 +11,25 @@ Class {
 }
 
 { #category : #structure }
-Phazzer class >> hackThePlanet [
-| pz |
+Phazzer class >> amplifyAll [
+	| pz |
 	pz := self new.
 	RPackage organizer packages
-		do: [ :p | pz phazzPackage: p ]
-		displayingProgress: [ :p | 'Phazzing all image: ' , p name ]
+		do: [ :p | pz processPackage: p ]
+		displayingProgress: [ :p | 'Amplification package: ' , p name ]
+]
+
+{ #category : #structure }
+Phazzer class >> hackThePlanet [
+	self amplifyAll.
+	self runAll 
+]
+
+{ #category : #structure }
+Phazzer class >> runAll [
+	| pz |
+	pz := self new.
+	pz run
 ]
 
 { #category : #'as yet unclassified' }
