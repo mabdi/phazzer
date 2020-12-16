@@ -45,25 +45,24 @@ PzSqliteDbTest >> tearDown [
 
 { #category : #test }
 PzSqliteDbTest >> testFlagAllInstalledAsCreated [
-		| fakeTest c t row |
+	| fakeTest c t row |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: PzFakeTest.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	row := db getNotFinished.
-	self
-		assertEmpty: row.
+	self assertEmpty: row.
 	db flagAllInstalledAsCreated.
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForCreated 
+		equals: PzSqliteDb stateForCreated
 ]
 
 { #category : #test }
 PzSqliteDbTest >> testFlagAsProcessed [
 	| fakeTest c t row |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: PzFakeTest.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	c := self buildFakeTest: fakeTest.
 	t := c selector: #test1.
@@ -87,16 +86,18 @@ PzSqliteDbTest >> testLastUpdate [
 PzSqliteDbTest >> testMethodAdd [
 	| row fakeTest |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: self class.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	row := self getRow: fakeTest.
-	self assert: (row first at: #status) asInteger equals: PzSqliteDb stateForCreated
+	self
+		assert: (row first at: #status) asInteger
+		equals: PzSqliteDb stateForCreated
 ]
 
 { #category : #tests }
 PzSqliteDbTest >> testMethodFinished [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: PzFakeTest.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	c := self buildFakeTest: fakeTest.
 	t := c selector: #test1.
@@ -105,26 +106,26 @@ PzSqliteDbTest >> testMethodFinished [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForFinished 
+		equals: PzSqliteDb stateForFinished
 ]
 
 { #category : #tests }
 PzSqliteDbTest >> testMethodInstall [
 	| row fakeTest |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: self class.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForInstalled 
+		equals: PzSqliteDb stateForInstalled
 ]
 
 { #category : #tests }
 PzSqliteDbTest >> testMethodNotFinished [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: PzFakeTest.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	c := self buildFakeTest: fakeTest.
 	t := c selector: #test1.
@@ -139,7 +140,7 @@ PzSqliteDbTest >> testMethodNotFinished [
 PzSqliteDbTest >> testMethodStart [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
-	db stashTestmethod: {fakeTest} base: PzFakeTest.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	c := self buildFakeTest: fakeTest.
 	t := c selector: #test1.

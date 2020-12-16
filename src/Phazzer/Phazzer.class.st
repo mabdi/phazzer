@@ -173,7 +173,7 @@ Phazzer >> processTestMethod: aTestMethod [
 	| t ts |
 	t := self removeAssertions: aTestMethod.
 	ts := self inputAmplify: t selector: aTestMethod selector.
-	db stashTestmethod: ts base: aTestMethod methodClass
+	self stashTestmethod: ts base: aTestMethod methodClass
 ]
 
 { #category : #'as yet unclassified' }
@@ -348,6 +348,15 @@ Phazzer >> startSandboxAndWatchPriority: priority OnFinish: aBlock [
 	executor resume.
 	semaphorExecutor wait.
 	aBlock value
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> stashTestmethod: sourceCodes base: class [
+	| selector |
+	sourceCodes
+		do: [ :sourceCode | 
+			selector := (self tools parsedMethodFrom: sourceCode) selector.
+			db insertTestmethod: sourceCode selector: selector base: class ]
 ]
 
 { #category : #accessing }

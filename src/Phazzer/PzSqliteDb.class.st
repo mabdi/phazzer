@@ -207,6 +207,23 @@ PzSqliteDb >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
+PzSqliteDb >> insertTestmethod: sourceCode selector: selector base: class [
+	| db |
+	db := self getDb.
+	
+	[ db open.
+	db
+		execute:
+			'INSERT INTO tests(baseClass,selector,testMethod,status) VALUES (:baseClass,:selector,:method,:status);'
+		with:
+			{(':baseClass' -> class name).
+			(':selector' -> selector).
+			(':method' -> sourceCode).
+			(':status' -> self class stateForCreated)} asDictionary ]
+		ensure: [ db close ]
+]
+
+{ #category : #'as yet unclassified' }
 PzSqliteDb >> lastUpdate [
 	| db c data |
 	db := self getDb.
@@ -291,24 +308,5 @@ PzSqliteDb >> resetLastUpdate [
 SET value = 0
 WHERE key = "lastUpdate"'
 		]
-		ensure: [ db close ]
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb >> stashTestmethod: sourceCodes base: class [
-	| db selector |
-	db := self getDb.
-	db open.
-	[ sourceCodes
-		do: [ :sourceCode | 
-			selector := (PzTools new parsedMethodFrom: sourceCode) selector.
-			db
-				execute:
-					'INSERT INTO tests(baseClass,selector,testMethod,status) VALUES (:baseClass,:selector,:method,:status);'
-				with:
-					{(':baseClass' -> class name).
-					(':selector' -> selector).
-					(':method' -> sourceCode).
-					(':status' -> self class stateForCreated)} asDictionary ] ]
 		ensure: [ db close ]
 ]
