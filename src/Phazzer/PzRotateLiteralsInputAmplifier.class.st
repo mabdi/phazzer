@@ -7,8 +7,7 @@ Class {
 { #category : #removing }
 PzRotateLiteralsInputAmplifier >> amplifyInputs [
 	| results literals |
-
-	literals := self getAllLiterals: aMethodAST.
+	literals := self getAllLiterals.
 	results := OrderedCollection new.
 	literals
 		keysAndValuesDo: [ :type :vals | 
@@ -17,18 +16,18 @@ PzRotateLiteralsInputAmplifier >> amplifyInputs [
 						results
 							add:
 								(self
-									transform: aMethodAST copy
-									type: type
+									transformType: type
 									values: vals
 									startFrom: offset) ] ] ].
 	^ results collect: #formattedCode
 ]
 
 { #category : #removing }
-PzRotateLiteralsInputAmplifier >> getAllLiterals: aMethodAST [
+PzRotateLiteralsInputAmplifier >> getAllLiterals [
 	| nodes result |
-	nodes := (aMethodAST body allChildren select: #isLiteralNode)
-		reject: #isLiteralArray.
+	nodes := aMethodAST body allChildren select: #isLiteralNode.
+	nodes := nodes reject: #isLiteralArray.
+	nodes := nodes reject: [:n | n parent isLiteralArray].
 	result := Dictionary new.
 	nodes
 		do: [ :n | 
@@ -43,27 +42,18 @@ PzRotateLiteralsInputAmplifier >> namingPrefix [
 ]
 
 { #category : #removing }
-PzRotateLiteralsInputAmplifier >> transform: aMethodAST type: type value: value [
-	| nodes |
-	nodes := ((aMethodAST body allChildren select: #isLiteralNode)
-		reject: #isLiteralArray) select: [ :n | n value class = type ].
-	nodes
-		do:
-			[ :n | n parent replaceNode: n withNode: (RBLiteralValueNode value: value) ].
-	^ aMethodAST
-]
-
-{ #category : #removing }
-PzRotateLiteralsInputAmplifier >> transform: aMethodAST type: type values: vals startFrom: index [
-	| nodes |
-	nodes := ((aMethodAST body allChildren select: #isLiteralNode)
-		reject: #isLiteralArray) select: [ :n | n value class = type ].
+PzRotateLiteralsInputAmplifier >> transformType: type values: vals startFrom: index [
+	| nodes newMethodAST |
+	newMethodAST := aMethodAST copy.
+	nodes := (((newMethodAST body allChildren select: #isLiteralNode)
+		reject: #isLiteralArray) reject: [ :n | n parent isLiteralArray ])
+		select: [ :n | n value class = type ].
 	nodes
 		doWithIndex: [ :n :i | 
 			n parent
 				replaceNode: n
 				withNode:
 					(RBLiteralValueNode
-						value: (vals at: 1 + ((i -1 + index) % vals size))) ].
-	^ aMethodAST
+						value: (vals at: 1 + ((i - 1 + index) % vals size))) ].
+	^ newMethodAST
 ]

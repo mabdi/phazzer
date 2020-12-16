@@ -7,8 +7,7 @@ Class {
 { #category : #removing }
 PzUniqLiteralsInputAmplifier >> amplifyInputs [
 	| results literals |
-
-	literals := self getAllLiterals: aMethodAST.
+	literals := self getAllLiterals.
 	results := OrderedCollection new.
 	literals
 		keysAndValuesDo: [ :type :set | 
@@ -21,10 +20,10 @@ PzUniqLiteralsInputAmplifier >> amplifyInputs [
 ]
 
 { #category : #removing }
-PzUniqLiteralsInputAmplifier >> getAllLiterals: aMethodAST [
+PzUniqLiteralsInputAmplifier >> getAllLiterals [
 	| nodes result |
-	nodes := (aMethodAST body allChildren select: #isLiteralNode)
-		reject: #isLiteralArray.
+	nodes := ((aMethodAST body allChildren select: #isLiteralNode)
+		reject: #isLiteralArray)reject: [ :n | n parent isLiteralArray ].
 	result := Dictionary new.
 	nodes
 		do: [ :n | 
@@ -39,12 +38,12 @@ PzUniqLiteralsInputAmplifier >> namingPrefix [
 ]
 
 { #category : #removing }
-PzUniqLiteralsInputAmplifier >> transform: aMethodAST type: type value: value [
+PzUniqLiteralsInputAmplifier >> transform: newMethodAST type: type value: value [
 	| nodes |
-	nodes := ((aMethodAST allChildren select: #isLiteralNode)
-		reject: #isLiteralArray) select: [ :n | n value class = type ].
+	nodes := (((newMethodAST allChildren select: #isLiteralNode)
+		reject: #isLiteralArray) reject: [ :n | n parent isLiteralArray ] ) select: [ :n | n value class = type ].
 	nodes
 		do:
 			[ :n | n parent replaceNode: n withNode: (RBLiteralValueNode value: value) ].
-	^ aMethodAST
+	^ newMethodAST
 ]
