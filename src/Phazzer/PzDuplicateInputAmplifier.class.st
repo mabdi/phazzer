@@ -20,11 +20,11 @@ PzDuplicateInputAmplifier >> applyMessageDuplicate: index on: aMethod [
 	| statement mClone theCode |
 	mClone := aMethod copy.
 	statement := mClone statements at: index.
-	statement isAssignment ifTrue: [ statement := statement value ].
+	statement isAssignment
+		ifTrue: [ statement := statement value ].
 	mClone statements add: statement afterIndex: index.
 	theCode := mClone formattedCode.
-	(theCode includesSubstring: '<an unprintable nonliteral value>')
-		ifTrue: [ self error: 'sth is wrong. you shouldnt be here!' ].
+	self checkTheCodeIsCorrect: theCode.
 	^ theCode
 ]
 

@@ -25,8 +25,7 @@ PzRemoveInputAmplifier >> applyMessageRemove: index on: aMethod [
 	mClone := aMethod copy.
 	mClone statements at: index put: empty.
 	theCode := mClone formattedCode.
-	(theCode includesSubstring: '<an unprintable nonliteral value>')
-		ifTrue: [ self error: 'sth is wrong. you shouldnt be here!' ].
+	self checkTheCodeIsCorrect: theCode.
 	^ theCode
 ]
 

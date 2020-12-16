@@ -21,6 +21,15 @@ PzAbstractInputAmplifier >> amplifyInputs [
 	^ self subclassResponsibility 
 ]
 
+{ #category : #'as yet unclassified' }
+PzAbstractInputAmplifier >> checkTheCodeIsCorrect: theCode [
+	| nonLiteralError |
+	nonLiteralError:= '<an unprintable nonliteral value>'.
+	(testMethod includesSubstring: nonLiteralError) ifFalse:[  
+	( theCode includesSubstring: nonLiteralError)
+		ifTrue: [ self error: 'sth is wrong. you shouldnt be here!' ]]
+]
+
 { #category : #removing }
 PzAbstractInputAmplifier >> helperMethods [
 	^ helperMethods

@@ -241,8 +241,7 @@ PzDspotLiteralInputAmplifier >> replaceMappings: map on: aMethod [
 				when: [ :n | n start = map key start ].
 			rewriter executeTree: mClone.
 			theCode := mClone formattedCode.
-			(theCode includesSubstring: '<an unprintable nonliteral value>')
-				ifTrue: [ self error: 'sth is wrong. you shouldnt be here!' ].
+			self checkTheCodeIsCorrect: theCode.
 			result add: theCode ].
 	^ result
 ]
