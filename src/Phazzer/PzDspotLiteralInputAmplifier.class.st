@@ -86,7 +86,6 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 						addAll:
 							{(n -> (RBLiteralValueNode value: n value - 1)).
 							(n -> (RBLiteralValueNode value: n value + 1)).
-							(n -> (RBLiteralValueNode value: n value * -1)).
 							(n -> (RBLiteralValueNode value: n value * 2)).
 							(n -> (RBLiteralValueNode value: half)).
 							(sameTypeNodes
@@ -101,6 +100,7 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 													(RBMessageNode receiver: (RBVariableNode named: #Float) selector: #nan)).
 											(n -> (RBLiteralValueNode value: 0.0)).
 											(n -> (RBLiteralValueNode value: -0.0)).
+											(n -> (RBLiteralValueNode value: n value * -1)).
 											(n
 												->
 													(RBMessageNode
@@ -115,6 +115,7 @@ PzDspotLiteralInputAmplifier >> amplifyNumbers [
 								ifTrue: [ res
 										addAll:
 											{(n -> (RBLiteralValueNode value: 0)).
+											(n -> (RBLiteralValueNode value: n value * -1)).
 											(n
 												->
 													(RBMessageNode
