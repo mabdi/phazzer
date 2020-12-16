@@ -160,7 +160,7 @@ Phazzer >> processPackage: package [
 
 { #category : #'as yet unclassified' }
 Phazzer >> processTestClass: aTestClass [
-	(self checkClassIsProcessed: aTestClass)
+	(db checkClassIsProcessed: aTestClass)
 		ifFalse: [ ^ self ].
 	aTestClass allTestSelectors
 		do:
