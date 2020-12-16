@@ -118,7 +118,7 @@ PzSqliteDb >> fetchTests: aNumber [
                    ORDER BY rowid LIMIT ' , aNumber asString
 				value: self class stateForCreated.
 			data := c rows.
-			data
+			"data
 				ifNotEmpty: [ db
 						execute:
 							'UPDATE tests
@@ -126,9 +126,8 @@ SET status = ?
 WHERE status = ? and rowid <= ?'
 						value: self class stateForInstalled
 						value: self class stateForCreated
-						value: (data last at: #rowid) ].
-				data ].
-	
+						value: (data last at: #rowid) ]."
+			data ]
 ]
 
 { #category : #accessing }

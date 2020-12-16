@@ -69,7 +69,7 @@ PzConfig >> defaultValues: key [
 	(#freezeTimeOut -> 5).
 	(#sandbox -> true).
 	(#dbName -> 'phazzer.db').
-	(#headless -> true).
+	(#headless -> false).
 	(#debug -> true)} asDictionary at: key
 ]
 
