@@ -15,6 +15,90 @@ PzDspotLiteralInputAmplifier >> addARandomCharacterTo: aString [
 		, (aString copyFrom: x + 1 to: aString size)
 ]
 
+{ #category : #'as yet unclassified' }
+PzDspotLiteralInputAmplifier >> ampNumbersLiteralArray: n [
+	| half res |
+	res := OrderedCollection new.
+	n parent isForByteArray
+		ifTrue: [ "3 bit integers"
+			res add: n -> (RBLiteralValueNode value: 0).
+			res add: n -> (RBLiteralValueNode value: 255).
+			res add: n -> (RBLiteralValueNode value: 256 atRandom - 1).
+			^ res ].
+	half := n value isInteger
+		ifTrue: [ (n value / 2) asInteger ]
+		ifFalse: [ n value / 2 ].
+	res
+		addAll:
+			{(n -> (RBLiteralValueNode value: n value - 1)).
+			(n -> (RBLiteralValueNode value: n value + 1)).
+			(n -> (RBLiteralValueNode value: n value * -1)).
+			(n -> (RBLiteralValueNode value: n value * 2)).
+			(n -> (RBLiteralValueNode value: half))}.
+	n value isFloat
+		ifTrue: [ res
+				addAll:
+					{(n -> (RBLiteralValueNode value: 0.0)).
+					(n -> (RBLiteralValueNode value: -0.0))} ].
+	n value isInteger
+		ifTrue: [ res addAll: {(n -> (RBLiteralValueNode value: 0))} ].
+	^ res
+]
+
+{ #category : #'as yet unclassified' }
+PzDspotLiteralInputAmplifier >> ampNumbersNormal: n from: nodes [
+	| sameTypeNodes half res |
+	sameTypeNodes := nodes reject: [ :n2 | n2 == n ].
+	half := n value isInteger
+		ifTrue: [ (n value / 2) asInteger ]
+		ifFalse: [ n value / 2 ].
+	res := OrderedCollection new.
+	sameTypeNodes
+		ifNotEmpty: [ res
+				add: n -> (RBLiteralValueNode value: sameTypeNodes atRandom value) ].
+	res
+		addAll:
+			{(n -> (RBLiteralValueNode value: n value - 1)).
+			(n -> (RBLiteralValueNode value: n value + 1)).
+			(n -> (RBLiteralValueNode value: n value * 2)).
+			(n -> (RBLiteralValueNode value: half))}.
+	n value isFloat
+				ifTrue: [ res
+						addAll:
+							{(n
+								->
+									(RBMessageNode receiver: (RBVariableNode named: #Float) selector: #nan)).
+							(n -> (RBLiteralValueNode value: 0.0)).
+							(n -> (RBLiteralValueNode value: -0.0)).
+							(n -> (RBLiteralValueNode value: n value * -1)).
+							(n
+								->
+									(RBMessageNode
+										receiver: (RBVariableNode named: #Float)
+										selector: #infinity)).
+							(n
+								->
+									(RBMessageNode
+										receiver: (RBVariableNode named: #Float)
+										selector: #negativeInfinity))} ].
+			n value isInteger
+				ifTrue: [ res
+						addAll:
+							{(n -> (RBLiteralValueNode value: 0)).
+							(n -> (RBLiteralValueNode value: n value * -1)).
+							(n
+								->
+									(RBMessageNode
+										receiver: (RBVariableNode named: #SmallInteger)
+										selector: #minVal)).
+							(n
+								->
+									(RBMessageNode
+										receiver: (RBVariableNode named: #SmallInteger)
+										selector: #maxVal))} ].
+	^ res
+]
+
 { #category : #removing }
 PzDspotLiteralInputAmplifier >> amplifyBooleans [
 	| nodes |
@@ -70,63 +154,16 @@ PzDspotLiteralInputAmplifier >> amplifyInputs [
 
 { #category : #removing }
 PzDspotLiteralInputAmplifier >> amplifyNumbers [
-	| nodes sameTypeNodes half res |
+	| nodes |
 	nodes := aMethodAST body allChildren
 		select: [ :n | n isLiteralNode and: [ n value isNumber ] ].
-	res := OrderedCollection new.
 	mappings
 		addAll:
 			(nodes
 				flatCollect: [ :n | 
-					sameTypeNodes := nodes reject: [ :n2 | n2 == n ].
-					half := n value isInteger
-						ifTrue: [ (n value / 2) asInteger ]
-						ifFalse: [ n value / 2 ].
-					res
-						addAll:
-							{(n -> (RBLiteralValueNode value: n value - 1)).
-							(n -> (RBLiteralValueNode value: n value + 1)).
-							(n -> (RBLiteralValueNode value: n value * 2)).
-							(n -> (RBLiteralValueNode value: half)).
-							(sameTypeNodes
-								ifEmpty: [ nil ]
-								ifNotEmpty: [ n -> (RBLiteralValueNode value: sameTypeNodes atRandom value) ])}.
 					n parent isLiteralArray
-						ifFalse: [ n value isFloat
-								ifTrue: [ res
-										addAll:
-											{(n
-												->
-													(RBMessageNode receiver: (RBVariableNode named: #Float) selector: #nan)).
-											(n -> (RBLiteralValueNode value: 0.0)).
-											(n -> (RBLiteralValueNode value: -0.0)).
-											(n -> (RBLiteralValueNode value: n value * -1)).
-											(n
-												->
-													(RBMessageNode
-														receiver: (RBVariableNode named: #Float)
-														selector: #infinity)).
-											(n
-												->
-													(RBMessageNode
-														receiver: (RBVariableNode named: #Float)
-														selector: #negativeInfinity))} ].
-							n value isInteger
-								ifTrue: [ res
-										addAll:
-											{(n -> (RBLiteralValueNode value: 0)).
-											(n -> (RBLiteralValueNode value: n value * -1)).
-											(n
-												->
-													(RBMessageNode
-														receiver: (RBVariableNode named: #SmallInteger)
-														selector: #minVal)).
-											(n
-												->
-													(RBMessageNode
-														receiver: (RBVariableNode named: #SmallInteger)
-														selector: #maxVal))} ] ].
-					res ]).
+						ifTrue: [ self ampNumbersLiteralArray: n ]
+						ifFalse: [ self ampNumbersNormal: n from: nodes ] ]).
 	mappings := mappings reject: #isNil
 ]
 
