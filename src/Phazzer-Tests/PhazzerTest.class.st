@@ -52,7 +52,7 @@ PhazzerTest >> testSandboxedCrash [
 			{PzDspotLiteralInputAmplifier.
 			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
-	(PzSqliteDb named: cnf dbName) purgeDb
+	(PzSqliteDb named: cnf dbName) 
 		purgeDb;
 		initDb.
 	pz := Phazzer new.
@@ -80,7 +80,7 @@ PhazzerTest >> testSandboxedFreeze [
 	cnf freezeTimeOut: 5.
 	cnf dbName: 'testDb.db'.
 	cnf headless: false.
-	(PzSqliteDb named: cnf dbName) purgeDb
+	(PzSqliteDb named: cnf dbName) 
 		purgeDb;
 		initDb.
 	pz := Phazzer new.
