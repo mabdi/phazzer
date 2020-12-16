@@ -2,7 +2,8 @@ Class {
 	#name : #PzSqliteDb,
 	#superclass : #Object,
 	#instVars : [
-		'dbName'
+		'dbName',
+		'openInstance'
 	],
 	#category : #Phazzer
 }
@@ -53,22 +54,18 @@ PzSqliteDb >> anyUnFinishedLeft [
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> checkClassIsProcessed: aTestClass [
-	| db cursor |
-	db := self getDb.
-	db open.
-	^ [ cursor := db
+	| cursor |
+	^ self
+		execDb: [ :db | cursor := db
 		execute: 'select count(*) as count from tests where baseClass = ?'
 		value: aTestClass name.
 	(cursor next at: #count) = 0 ]
-		ensure: [ self forceClose: db ]
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> createTableGlobals [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db | db
 		execute:
 			'CREATE TABLE IF NOT EXISTS globals (
 	key TEXT NOT NULL UNIQUE,
@@ -76,15 +73,13 @@ PzSqliteDb >> createTableGlobals [
 );'.
 	db
 		execute: 'INSERT OR IGNORE  INTO globals(key,value) VALUES ("lastUpdate", 0);' ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> createTableTests [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db | db
 		execute:
 			'CREATE TABLE IF NOT EXISTS tests (
 	baseClass TEXT NOT NULL,
@@ -93,7 +88,7 @@ PzSqliteDb >> createTableTests [
 	status INTEGER NOT NULL,
 	extra TEXT
 );' ]
-		ensure: [ self forceClose: db ]
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -105,101 +100,98 @@ PzSqliteDb >> dbName: aName [
 PzSqliteDb >> execDb: aBlock [
 	| db |
 	db := self getDb.
-	db open.
 	^ [ aBlock value: db ]
-		ensure: [ self forceClose: db ]
+	on: Error do: [ openInstance := nil ]
 ]
 
 { #category : #accessing }
 PzSqliteDb >> fetchTests: aNumber [
-	| db c data |
-	db := self getDb.
-	db open.
+	| c data |
 	data := nil.
-	[ c := db
-		execute:
-			'SELECT rowid, baseClass, testMethod 
+	^ self
+		execDb: [ :db | 
+			c := db
+				execute:
+					'SELECT rowid, baseClass, testMethod 
                    FROM tests
                    WHERE status = ? 
                    ORDER BY rowid LIMIT ' , aNumber asString
-		value: self class stateForCreated.
-	data := c rows.
-	data
-		ifNotEmpty: [ db
-				execute:
-					'UPDATE tests
+				value: self class stateForCreated.
+			data := c rows.
+			data
+				ifNotEmpty: [ db
+						execute:
+							'UPDATE tests
 SET status = ?
 WHERE status = ? and rowid <= ?'
-				value: self class stateForInstalled
-				value: self class stateForCreated
-				value: (data last at: #rowid) ] ]
-		ensure: [ self forceClose: db ].
-	^ data
+						value: self class stateForInstalled
+						value: self class stateForCreated
+						value: (data last at: #rowid) ].
+				data ].
+	
 ]
 
 { #category : #accessing }
 PzSqliteDb >> flagAllInstalledAsCreated [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db | 
+	 db
 		execute: 'UPDATE tests SET status = ? WHERE status = ?'
 		value: self class stateForCreated
 		value: self class stateForInstalled ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #accessing }
 PzSqliteDb >> flagAsCreated: rowId [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+^ self
+		execDb: [ :db | db
 		execute: 'UPDATE tests SET status = ? WHERE rowid = ?'
 		value: self class stateForCreated
 		value: rowId ]
-		ensure: [ self forceClose: db ]
 ]
 
 { #category : #accessing }
 PzSqliteDb >> flagAsProcessed: rowId [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db | db
 		execute: 'UPDATE tests SET status = ? WHERE rowid = ?'
 		value: self class stateForProcessed
 		value: rowId ]
-		ensure: [ self forceClose: db ]
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> forceClose: db [
 	| dbHandle library |
-	dbHandle := db handle.
+	"dbHandle := db handle.
 	library := SQLite3Library current.
-	dbHandle ifNotNil: [ library close: dbHandle ].
+	dbHandle ifNotNil: [ library close: dbHandle ]"
+	
+	"do nothing!"
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> getDb [
-	^ SQLite3Connection
-		on: (Smalltalk imageDirectory / dbName) fullName
+	openInstance
+		ifNil: [ openInstance := SQLite3Connection
+				on: (Smalltalk imageDirectory / dbName) fullName. openInstance open. ].
+	
+	^ openInstance
 ]
 
 { #category : #accessing }
 PzSqliteDb >> getNotFinished [
-	| db c |
-	db := self getDb.
-	db open.
-	^ [ c := db
+	| c |
+	^ self
+		execDb: [ :db | 
+	 c := db
 		execute:
 			'SELECT rowid, baseClass, testMethod, selector, status
                    FROM tests
                    WHERE status = ?'
 		value: self class stateForStarted.
 	c rows ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
@@ -215,9 +207,9 @@ PzSqliteDb >> initialize [
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> insertTestmethod: sourceCode selector: selector base: class [
-	| db |
-	db := self getDb.
-	[ db open.
+	^ self
+		execDb: [ :db | 
+	 
 	db
 		execute:
 			'INSERT INTO tests(baseClass,selector,testMethod,status) VALUES (:baseClass,:selector,:method,:status);'
@@ -226,44 +218,41 @@ PzSqliteDb >> insertTestmethod: sourceCode selector: selector base: class [
 			(':selector' -> selector).
 			(':method' -> sourceCode).
 			(':status' -> self class stateForCreated)} asDictionary ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> lastUpdate [
-	| db c data |
-	db := self getDb.
-	db open.
-	data := [ c := db
+	|  c data |
+	^ self
+		execDb: [ :db | 
+	c := db
 		execute:
 			'select value from globals
 WHERE key = "lastUpdate"'.
-	c rows ]
-		ensure: [ self forceClose: db ].
+	data := c rows.
 	data ifEmpty: [ ^ 0 ].
-	^ ((data at: 1) at: #value) asInteger
+	((data at: 1) at: #value) asInteger ]
+		.
+	
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> logAnUpdate [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db |  db
 		execute:
 			'UPDATE globals
 SET value = ?
 WHERE key = "lastUpdate"'
 		value: DateAndTime now asUnixTime ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> logTestFinished: aTestCase [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db | db
 		execute:
 			'UPDATE tests SET status = ?
 WHERE status = ? and baseClass = ? and selector = ?'
@@ -272,15 +261,13 @@ WHERE status = ? and baseClass = ? and selector = ?'
 			self class stateForStarted.
 			aTestCase class superclass name.
 			aTestCase selector asString} ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> logTestStart: aTestCase [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db |  db
 		execute:
 			'UPDATE tests
 SET status = ?
@@ -290,28 +277,25 @@ WHERE status = ? and baseClass = ? and selector = ?'
 			self class stateForInstalled.
 			aTestCase class superclass name.
 			aTestCase selector asString} ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> purgeDb [
-	| db |
-	db := self getDb.
-	db open.
-	[ db execute: 'DROP TABLE IF EXISTS tests;'.
+	^ self
+		execDb: [ :db | 
+	 db execute: 'DROP TABLE IF EXISTS tests;'.
 	db execute: 'DROP TABLE IF EXISTS globals;' ]
-		ensure: [ self forceClose: db ]
+		
 ]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> resetLastUpdate [
-	| db |
-	db := self getDb.
-	db open.
-	[ db
+	^ self
+		execDb: [ :db |  db
 		execute:
 			'UPDATE globals
 SET value = 0
 WHERE key = "lastUpdate"' ]
-		ensure: [ self forceClose: db ]
+
 ]
