@@ -1,45 +1,11 @@
 Class {
 	#name : #PzSqliteDb,
-	#superclass : #Object,
+	#superclass : #PzDb,
 	#instVars : [
-		'dbName',
 		'openInstance'
 	],
 	#category : #Phazzer
 }
-
-{ #category : #accessing }
-PzSqliteDb class >> named: aName [
-	^ self new
-		dbName: aName;
-		initDb;
-		yourself
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb class >> stateForCreated [
-	^ 0
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb class >> stateForFinished [
-	^ 3
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb class >> stateForInstalled [
-	^ 1
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb class >> stateForProcessed [
-	^ 4
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb class >> stateForStarted [
-	^ 2
-]
 
 { #category : #'as yet unclassified' }
 PzSqliteDb >> anyUnFinishedLeft [
@@ -89,11 +55,6 @@ PzSqliteDb >> createTableTests [
 	extra TEXT
 );' ]
 
-]
-
-{ #category : #'as yet unclassified' }
-PzSqliteDb >> dbName: aName [
-	dbName := aName
 ]
 
 { #category : #'as yet unclassified' }
@@ -194,6 +155,11 @@ PzSqliteDb >> getNotFinished [
 ]
 
 { #category : #'as yet unclassified' }
+PzSqliteDb >> idColumn [
+	^ 'rowid'
+]
+
+{ #category : #'as yet unclassified' }
 PzSqliteDb >> initDb [
 	self createTableTests .
 	self createTableGlobals 
@@ -266,17 +232,17 @@ WHERE status = ? and baseClass = ? and selector = ?'
 { #category : #'as yet unclassified' }
 PzSqliteDb >> logTestStart: aTestCase [
 	^ self
-		execDb: [ :db |  db
-		execute:
-			'UPDATE tests
+		execDb: [ :db | 
+			db
+				execute:
+					'UPDATE tests
 SET status = ?
 WHERE status = ? and baseClass = ? and selector = ?'
-		with:
-			{self class stateForStarted.
-			self class stateForInstalled.
-			aTestCase class superclass name.
-			aTestCase selector asString} ]
-		
+				with:
+					{self class stateForStarted.
+					self class stateForCreated.
+					aTestCase class superclass name.
+					aTestCase selector asString} ]
 ]
 
 { #category : #'as yet unclassified' }

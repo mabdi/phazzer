@@ -1,8 +1,5 @@
-"
-A PzSqliteDbTest is a test class for testing the behavior of PzSqliteDb
-"
 Class {
-	#name : #PzSqliteDbTest,
+	#name : #PzMongoDbTest,
 	#superclass : #TestCase,
 	#instVars : [
 		'db'
@@ -11,40 +8,36 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-PzSqliteDbTest >> buildFakeTest: fakeTest [
+PzMongoDbTest >> buildFakeTest: fakeTest [
 	^ PzTools new buildTestClassWith: {fakeTest} using: PzFakeTest
 ]
 
 { #category : #'as yet unclassified' }
-PzSqliteDbTest >> getRow: testMethod [
-	| sqlite row |
-	sqlite := db getDb.
-	sqlite open.
-	row := (sqlite
-		execute: 'select * from tests where testMethod = ?'
-		value: testMethod) rows.
-	sqlite close.
+PzMongoDbTest >> getRow: testMethod [
+	| tests row |
+	tests := db getTests.
+	row := tests select: {(#testMethod -> testMethod)} asDictionary.
 	^ row 
 ]
 
 { #category : #running }
-PzSqliteDbTest >> setUp [
+PzMongoDbTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 
-	db := PzSqliteDb new.
-	db dbName: 'TestDb.db'.
+	db := PzMongoDb named:self class name.
 	db purgeDb.
 	db initDb
 ]
 
 { #category : #running }
-PzSqliteDbTest >> tearDown [
+PzMongoDbTest >> tearDown [
 	db purgeDb.
-	PzTools new clearTempClasses 
+	db  close.
+	PzTools new clearTempClasses
 ]
 
 { #category : #test }
-PzSqliteDbTest >> testFlagAllInstalledAsCreated [
+PzMongoDbTest >> testFlagAllInstalledAsCreated [
 	| fakeTest c t row |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
@@ -59,7 +52,7 @@ PzSqliteDbTest >> testFlagAllInstalledAsCreated [
 ]
 
 { #category : #test }
-PzSqliteDbTest >> testFlagAsProcessed [
+PzMongoDbTest >> testFlagAsProcessed [
 	| fakeTest c t row |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
@@ -68,7 +61,7 @@ PzSqliteDbTest >> testFlagAsProcessed [
 	t := c selector: #test1.
 	db logTestStart: t.
 	row := db getNotFinished.
-	db flagAsProcessed: (row first at: #rowid).
+	db flagAsProcessed: (row first at: db idColumn).
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
@@ -76,14 +69,14 @@ PzSqliteDbTest >> testFlagAsProcessed [
 ]
 
 { #category : #test }
-PzSqliteDbTest >> testLastUpdate [
+PzMongoDbTest >> testLastUpdate [
 	self assert: db lastUpdate asInteger equals: 0.
 	db logAnUpdate.
 	self deny: db lastUpdate asInteger equals: 0.
 ]
 
 { #category : #tests }
-PzSqliteDbTest >> testMethodAdd [
+PzMongoDbTest >> testMethodAdd [
 	| row fakeTest |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
@@ -94,7 +87,7 @@ PzSqliteDbTest >> testMethodAdd [
 ]
 
 { #category : #tests }
-PzSqliteDbTest >> testMethodFinished [
+PzMongoDbTest >> testMethodFinished [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
@@ -110,7 +103,7 @@ PzSqliteDbTest >> testMethodFinished [
 ]
 
 { #category : #tests }
-PzSqliteDbTest >> testMethodInstall [
+PzMongoDbTest >> testMethodInstall [
 	| row fakeTest |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
@@ -122,7 +115,7 @@ PzSqliteDbTest >> testMethodInstall [
 ]
 
 { #category : #tests }
-PzSqliteDbTest >> testMethodNotFinished [
+PzMongoDbTest >> testMethodNotFinished [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
@@ -137,7 +130,7 @@ PzSqliteDbTest >> testMethodNotFinished [
 ]
 
 { #category : #tests }
-PzSqliteDbTest >> testMethodStart [
+PzMongoDbTest >> testMethodStart [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.

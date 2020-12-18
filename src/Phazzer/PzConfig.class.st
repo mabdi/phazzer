@@ -66,9 +66,9 @@ PzConfig >> debug: boolean [
 { #category : #accessing }
 PzConfig >> defaultValues: key [
 	^ {(#amps -> PzAbstractInputAmplifier subclasses).
-	(#freezeTimeOut -> 5).
+	(#freezeTimeOut -> 30).
 	(#sandbox -> true).
-	(#dbName -> 'phazzer.db').
+	(#dbName -> 'phazzer').
 	(#headless -> false).
 	(#debug -> true)} asDictionary at: key
 ]

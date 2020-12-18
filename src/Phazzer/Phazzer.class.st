@@ -64,9 +64,14 @@ Phazzer >> db [
 	^ db
 ]
 
+{ #category : #finalization }
+Phazzer >> finalize [
+	db close
+]
+
 { #category : #state }
 Phazzer >> initDb [
-	db := PzSqliteDb named: config dbName
+	db := PzMongoDb named: config dbName
 ]
 
 { #category : #initialization }
@@ -233,7 +238,7 @@ Phazzer >> runAllInstalled [
 					x isResumable
 						ifTrue: [ x resume ].
 					nil ] ]
-		displayingProgress: 'Test classes'
+		displayingProgress: 'Test classes: ', testClasses size asString 
 ]
 
 { #category : #'as yet unclassified' }
