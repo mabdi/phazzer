@@ -45,8 +45,43 @@ PzDb class >> stateForStarted [
 ]
 
 { #category : #'as yet unclassified' }
+PzDb >> anyUnFinishedLeft [ 
+	^ self subclassResponsibility 
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> checkClassIsProcessed: aTestClass [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
 PzDb >> dbName: aName [
 	dbName := aName
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> fetchTests: aNumber [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> flagAllInstalledAsCreated [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> flagAsCreated: rowId [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> flagAsProcessed: rowId [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> getNotFinished [
+	^ self subclassResponsibility
 ]
 
 { #category : #'as yet unclassified' }
@@ -56,4 +91,39 @@ PzDb >> idColumn [
 
 { #category : #state }
 PzDb >> initDb [
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> insertTestmethod: sourceCode selector: selector base: class [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> lastUpdate [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> logAnUpdate [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> logTestFinished: aTestCase [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> logTestStart: aTestCase [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> purgeDb [
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+PzDb >> resetLastUpdate [
+	^ self subclassResponsibility
 ]

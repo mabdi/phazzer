@@ -12,13 +12,14 @@ Class {
 PzMongoDb >> anyUnFinishedLeft [
 	| db |
 	db := self getTests.
-	^ db
+	self error: 'code is not correct: not'. 
+	^ (db
 		sizeForQuery:
 			{(#'$or'
 				->
 					{{(#status -> self class stateForFinished)} asDictionary.
 					{(#status -> self class stateForProcessed)} asDictionary})}
-				asDictionary
+				asDictionary) > 0
 ]
 
 { #category : #'as yet unclassified' }

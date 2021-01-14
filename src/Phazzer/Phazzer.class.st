@@ -19,6 +19,11 @@ Phazzer class >> amplifyAll [
 		displayingProgress: [ :p | 'Amplification package: ' , p name ]
 ]
 
+{ #category : #'as yet unclassified' }
+Phazzer class >> dbClass [
+	^ PzLinuxFileSystemDb
+]
+
 { #category : #structure }
 Phazzer class >> hackThePlanet [
 	self amplifyAll.
@@ -71,7 +76,7 @@ Phazzer >> finalize [
 
 { #category : #state }
 Phazzer >> initDb [
-	db := PzMongoDb named: config dbName
+	db := self class dbClass named: config dbName
 ]
 
 { #category : #initialization }

@@ -20,7 +20,7 @@ PhazzerTest >> setUp [
 	| finalP |
 	target := PzFakeTest.
 	tools := PzTools new.
-	PzMongoDb  new purgeDb.
+	Phazzer dbClass  new purgeDb.
 	finalP := tools defaultFinalPackage asPackageIfAbsent: [ nil ].
 	finalP
 		ifNotNil: [ finalP classes
@@ -52,7 +52,7 @@ PhazzerTest >> testSandboxedCrash [
 			{PzDspotLiteralInputAmplifier.
 			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
-	(PzMongoDb named: cnf dbName)
+	(Phazzer dbClass  named: cnf dbName)
 		purgeDb;
 		initDb.
 	pz := Phazzer new.
@@ -68,7 +68,7 @@ PhazzerTest >> testSandboxedCrash [
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
 	self deny: pz db anyUnFinishedLeft.
-	(PzMongoDb  named: cnf dbName) purgeDb
+	(Phazzer dbClass named: cnf dbName) purgeDb
 ]
 
 { #category : #tests }
@@ -83,7 +83,7 @@ PhazzerTest >> testSandboxedFreeze [
 	cnf freezeTimeOut: 5.
 	cnf dbName: self class name.
 	cnf headless: false.
-	(PzMongoDb named: cnf dbName)
+	(Phazzer dbClass named: cnf dbName)
 		purgeDb;
 		initDb.
 	pz := Phazzer new.
@@ -100,5 +100,5 @@ PhazzerTest >> testSandboxedFreeze [
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
 	self deny: pz db anyUnFinishedLeft.
-	(PzMongoDb  named: cnf dbName) purgeDb
+	(Phazzer dbClass  named: cnf dbName) purgeDb
 ]
