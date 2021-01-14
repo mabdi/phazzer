@@ -48,7 +48,7 @@ PzMongoDbTest >> testFlagAllInstalledAsCreated [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForCreated
+		equals: PzMongoDb  stateForCreated
 ]
 
 { #category : #test }
@@ -65,7 +65,7 @@ PzMongoDbTest >> testFlagAsProcessed [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForProcessed
+		equals: PzMongoDb  stateForProcessed
 ]
 
 { #category : #test }
@@ -83,7 +83,7 @@ PzMongoDbTest >> testMethodAdd [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForCreated
+		equals: PzMongoDb  stateForCreated
 ]
 
 { #category : #tests }
@@ -99,7 +99,7 @@ PzMongoDbTest >> testMethodFinished [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForFinished
+		equals: PzMongoDb stateForFinished
 ]
 
 { #category : #tests }
@@ -111,7 +111,7 @@ PzMongoDbTest >> testMethodInstall [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForInstalled
+		equals: PzMongoDb stateForInstalled
 ]
 
 { #category : #tests }
@@ -126,7 +126,7 @@ PzMongoDbTest >> testMethodNotFinished [
 	row := db getNotFinished.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForStarted
+		equals: PzMongoDb stateForStarted
 ]
 
 { #category : #tests }
@@ -141,5 +141,5 @@ PzMongoDbTest >> testMethodStart [
 	row := self getRow: fakeTest.
 	self
 		assert: (row first at: #status) asInteger
-		equals: PzSqliteDb stateForStarted
+		equals: PzMongoDb stateForStarted
 ]

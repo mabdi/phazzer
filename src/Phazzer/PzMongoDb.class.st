@@ -185,5 +185,5 @@ PzMongoDb >> resetLastUpdate [
 	db := self getGlobals.
 	rows := db
 		update: {(#key -> 'lastUpdate')} asDictionary
-		with: {(#'$set' -> {(#value -> 0)})} asDictionary
+		with: {(#'$set' -> {(#value -> 0)} asDictionary)} asDictionary
 ]
