@@ -128,12 +128,16 @@ PzLinuxFileSystemDb >> idColumn [
 PzLinuxFileSystemDb >> initDb [
 	self system: 'mkdir ' , dbName.
 	self system: 'mkdir ' , dbName , '/tests'.
-	self system: 'mkdir ' , dbName , '/tests/', self class stateForCreated.
-	self system: 'mkdir ' , dbName , '/tests/', self class stateForFinished.
-	self system: 'mkdir ' , dbName , '/tests/', self class stateForInstalled.
-	self system: 'mkdir ' , dbName , '/tests/', self class stateForProcessed.
-	self system: 'mkdir ' , dbName , '/tests/', self class stateForStarted .
-	self system: 'mkdir ' , dbName , '/tests'.
+	self
+		system: 'mkdir ' , dbName , '/tests/' , self class stateForCreated.
+	self
+		system: 'mkdir ' , dbName , '/tests/' , self class stateForFinished.
+	self
+		system: 'mkdir ' , dbName , '/tests/' , self class stateForInstalled.
+	self
+		system: 'mkdir ' , dbName , '/tests/' , self class stateForProcessed.
+	self
+		system: 'mkdir ' , dbName , '/tests/' , self class stateForStarted.
 	self system: 'mkdir ' , dbName , '/globals'
 ]
 
@@ -179,7 +183,7 @@ PzLinuxFileSystemDb >> logAnUpdate [
 PzLinuxFileSystemDb >> logTestFinished: aTestCase [
 	self
 		system:
-			'mv ' , dbName , '/tests/' , self class stateForStarted  , '/'
+			'mv ' , dbName , '/tests/' , self class stateForStarted , '/'
 				,
 					(self
 						nameForBase: aTestCase class superclass name
@@ -189,12 +193,16 @@ PzLinuxFileSystemDb >> logTestFinished: aTestCase [
 
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> logTestStart: aTestCase [
+	(aTestCase selector asString includesSubstring: '27')
+		ifTrue: [ self halt ].
 	self
 		system:
-			'mv ' , dbName , '/tests/' , self class stateForCreated , '/' , (self nameForBase: aTestCase class superclass name selector: aTestCase selector asString)  ,' '
-				, dbName , '/tests/' , self class stateForStarted , '/'
-	
-
+			'mv ' , dbName , '/tests/' , self class stateForCreated , '/'
+				,
+					(self
+						nameForBase: aTestCase class superclass name
+						selector: aTestCase selector asString) , ' ' , dbName
+				, '/tests/' , self class stateForStarted , '/'
 ]
 
 { #category : #'as yet unclassified' }
@@ -215,14 +223,14 @@ PzLinuxFileSystemDb >> purgeDb [
 
 { #category : #'private - uffi' }
 PzLinuxFileSystemDb >> readFile: name [
-	(FileLocator imageDirectory / dbName / 'tests'
-		/ self class stateForCreated /  name) asFileReference contents
+	^ (FileLocator imageDirectory / dbName / 'tests'
+		/ self class stateForCreated / name) asFileReference contents
 ]
 
 { #category : #'private - uffi' }
 PzLinuxFileSystemDb >> readFile: name state: state [
-	(FileLocator imageDirectory / dbName / 'tests'
-		/ state / name) asFileReference contents
+	^ (FileLocator imageDirectory / dbName / 'tests' / state / name)
+		asFileReference contents
 ]
 
 { #category : #'as yet unclassified' }
@@ -236,7 +244,12 @@ PzLinuxFileSystemDb >> resetLastUpdate [
 
 { #category : #'private - uffi' }
 PzLinuxFileSystemDb >> system: aString [
-	^ OSPlatform current resultOfCommand: aString 
+	^ OSPlatform current
+		resultOfCommand:
+			(''
+				join:
+					{'cd '.
+					(FileLocator imageDirectory) fullName . '; ' . aString})
 ]
 
 { #category : #'private - uffi' }

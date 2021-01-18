@@ -10,7 +10,7 @@ Class {
 
 { #category : #accessing }
 PhazzerTest class >> defaultTimeLimit [
-	^ 1 minute
+	^ 10 minute
 ]
 
 { #category : #running }
@@ -20,7 +20,7 @@ PhazzerTest >> setUp [
 	| finalP |
 	target := PzFakeTest.
 	tools := PzTools new.
-	Phazzer dbClass  new purgeDb.
+	(Phazzer dbClass  named: self class name) purgeDb.
 	finalP := tools defaultFinalPackage asPackageIfAbsent: [ nil ].
 	finalP
 		ifNotNil: [ finalP classes
@@ -47,12 +47,13 @@ PhazzerTest >> testSandboxedCrash [
 	cnf sandbox: true.
 	cnf dbName: self class name.
 	cnf headless: false.
+	cnf freezeTimeOut: 180.
 	cnf
 		amps:
 			{PzDspotLiteralInputAmplifier.
 			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
-	(Phazzer dbClass  named: cnf dbName)
+	(Phazzer dbClass named: cnf dbName)
 		purgeDb;
 		initDb.
 	pz := Phazzer new.

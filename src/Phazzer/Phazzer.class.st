@@ -254,8 +254,8 @@ Phazzer >> runIfAnyTestsLeft [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
-	[ (self installCount: 5000) > 0 ]
-		whileTrue: [ self runAllInstalled ]
+	self halt.
+	[ (self installCount: 5000) > 0 ] whileTrue: [ self runAllInstalled ]
 ]
 
 { #category : #'as yet unclassified' }
