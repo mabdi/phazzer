@@ -127,3 +127,8 @@ PzDb >> purgeDb [
 PzDb >> resetLastUpdate [
 	^ self subclassResponsibility
 ]
+
+{ #category : #'as yet unclassified' }
+PzDb >> writePID: pid [
+	^ self subclassResponsibility
+]

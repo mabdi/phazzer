@@ -200,7 +200,7 @@ Phazzer >> removeFinishedTests [
 			self tools
 				buildFinalTestClassWith: {(l at: #testMethod)}
 				using: (self class environment at: (l at: #baseClass) asSymbol).
-			db flagAsProcessed: (l at: #rowid) ].
+			db flagAsProcessed: (l at: db idColumn) ].
 	db flagAllInstalledAsCreated.
 	self flag: #todo	"dont create new class for each test method. pack it in classes"
 ]
@@ -254,6 +254,7 @@ Phazzer >> runIfAnyTestsLeft [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
+	self writePIDtoGlobals.
 	self halt.
 	[ (self installCount: 5000) > 0 ] whileTrue: [ self runAllInstalled ]
 ]
@@ -317,16 +318,22 @@ Phazzer >> sandboxStartCommand [
 	config headless
 		ifTrue: [ args addFirst: '--headless' ].
 	args asString traceCr.
-	process := OSSUnixSubprocess new
+	"process := OSSUnixSubprocess new
 		command: FileLocator vmBinary pathString;
 		arguments: args.
-	process runAndWait
+	process runAndWait"
+	OSPlatform current
+		resultOfCommand: FileLocator vmBinary pathString , ' ' , (' ' join: args) 
 ]
 
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxStopCommand [
-	('killing pid: ' , process pid asString) traceCr.
-	process sigterm
+	| pid |
+	pid := db getSandboxPID.
+	pid = 0
+		ifTrue: [ ^ self ].
+	OSPlatform current resultOfCommand: 'pkill ' , config dbName.
+	db writePID: 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -372,4 +379,9 @@ Phazzer >> stashTestmethod: sourceCodes base: class [
 { #category : #accessing }
 Phazzer >> tools [
 	^ PzTools new
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> writePIDtoGlobals [
+	db writePID: OSProcess thisOSProcess pid
 ]

@@ -120,12 +120,26 @@ PzLinuxFileSystemDb >> getNotFinished [
 ]
 
 { #category : #'as yet unclassified' }
+PzLinuxFileSystemDb >> getSandboxPID [
+	| file s |
+	file := (FileLocator imageDirectory / dbName / 'globals' / 'pid.conf').
+	file exists
+		ifFalse: [ ^ 0 ].
+	s := file asFileReference contents.
+	s ifEmpty: [ ^ 0 ].
+	^ s asInteger
+	
+]
+
+{ #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> idColumn [
 	^ #_fileId
 ]
 
 { #category : #state }
 PzLinuxFileSystemDb >> initDb [
+	(FileLocator imageDirectory / dbName) exists
+		ifTrue: [ ^ self ].
 	self system: 'mkdir ' , dbName.
 	self system: 'mkdir ' , dbName , '/tests'.
 	self
@@ -163,11 +177,11 @@ PzLinuxFileSystemDb >> lastUpdate [
 PzLinuxFileSystemDb >> lineAsObjectFile: name state: state [
 	| res |
 	res := Dictionary new.
-	res at: #content put: (self readFile: name state: state).
+	res at: #testMethod put: (self readFile: name state: state).
 	res at: #status put: state.
 	res at: #baseClass put: ((name splitOn: '.') at: 1).
-	res at: #testMethod put: ((name splitOn: '.') at: 2).
-	res at: self idColumn put: (state , '/', name).
+	res at: #selector put: ((name splitOn: '.') at: 2).
+	res at: self idColumn put: state , '/' , name.
 	^ res
 ]
 
@@ -193,8 +207,6 @@ PzLinuxFileSystemDb >> logTestFinished: aTestCase [
 
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> logTestStart: aTestCase [
-	(aTestCase selector asString includesSubstring: '27')
-		ifTrue: [ self halt ].
 	self
 		system:
 			'mv ' , dbName , '/tests/' , self class stateForCreated , '/'
@@ -256,5 +268,13 @@ PzLinuxFileSystemDb >> system: aString [
 PzLinuxFileSystemDb >> writeFile: name content: aString [
 	(FileLocator imageDirectory / dbName / 'tests' / self class stateForCreated  / name) writeStream
 		nextPutAll: aString;
+		close
+]
+
+{ #category : #'as yet unclassified' }
+PzLinuxFileSystemDb >> writePID: pid [
+	(FileLocator imageDirectory / dbName / 'globals' / 'pid.conf')
+		writeStream
+		nextPutAll: pid asString;
 		close
 ]
