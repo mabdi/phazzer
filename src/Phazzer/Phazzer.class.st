@@ -254,8 +254,6 @@ Phazzer >> runIfAnyTestsLeft [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
-	self writePIDtoGlobals.
-	self halt.
 	[ (self installCount: 5000) > 0 ] whileTrue: [ self runAllInstalled ]
 ]
 
@@ -275,9 +273,12 @@ Phazzer >> runSandboxedWithPriority: priority [
 	master_image := FileLocator image pathString.
 	self sandboxInit.
 	FileLocator image pathString = master_image
-		ifTrue: [ self
+		ifTrue: [ "self
 				startSandboxAndWatchPriority: priority
-				OnFinish: (self sandboxOnFinishOrCrash: priority)  ].
+				OnFinish: (self sandboxOnFinishOrCrash: priority)"
+				self
+				sandboxStart: priority
+				OnFinish: (self sandboxOnFinishOrCrash: priority) ].
 	FileLocator image pathString = sandbox_image
 		ifTrue: [ PzContinueInSandbox new signal ]
 ]
@@ -299,9 +300,46 @@ Phazzer >> sandboxOnFinishOrCrash [
 Phazzer >> sandboxOnFinishOrCrash: priority [
 	^ [ self removeFinishedTests.
 	db anyUnFinishedLeft
-		ifTrue: [self
-		startSandboxAndWatchPriority: priority
-		OnFinish: (self sandboxOnFinishOrCrash: priority)] ]
+		ifTrue: [ self
+				sandboxStart: priority
+				OnFinish: (self sandboxOnFinishOrCrash: priority) ] ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> sandboxStart: priority OnFinish: aBlock [
+	| args |
+	"headless := '--headless'."
+	'Sandbox started' traceCr.
+	args := OrderedCollection new.
+	args
+		addAll:
+			{(sandbox_image , '.image').
+			PzCommandLineHandler commandName.
+			('--run=' , config dbName)}.
+	config headless
+		ifTrue: [ args addFirst: '--headless' ].
+	args asString traceCr.
+	process := OSSUnixSubprocess new
+		terminateOnShutdown;
+		command: FileLocator vmBinary pathString;
+		arguments: args.
+		process 
+		runAndWaitPollingEvery: (Delay forMilliseconds: 1000)
+			doing: [ :theProcess :outStream :errStream | 
+			Stdio stdout
+				nextPutAll: 'tick';
+				lf.
+			self halt.
+			theProcess exitStatus ifNotNil: [ self halt ].
+			self requiresToStopSandbox
+				ifTrue: [ self halt.
+					theProcess sigterm ] ]
+			onExitDo: [ :theProcess :outStream :errStream | 
+				Stdio stdout
+					nextPutAll: 'toc';
+					lf.
+				self halt.
+				aBlock value ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -318,12 +356,16 @@ Phazzer >> sandboxStartCommand [
 	config headless
 		ifTrue: [ args addFirst: '--headless' ].
 	args asString traceCr.
-	"process := OSSUnixSubprocess new
+	process := OSSUnixSubprocess new
+		terminateOnShutdown;
 		command: FileLocator vmBinary pathString;
 		arguments: args.
-	process runAndWait"
-	OSPlatform current
-		resultOfCommand: FileLocator vmBinary pathString , ' ' , (' ' join: args) 
+	process
+		runAndWaitPollingEvery: (Delay forMilliseconds: 1000)
+		doing: [ :theProcess :outStream :errStream | 
+			self requiresToStopSandbox
+				ifTrue: [ theProcess sigterm ] ]
+		onExitDo: [ :theProcess :outStream :errStream |  ]
 ]
 
 { #category : #'as yet unclassified' }

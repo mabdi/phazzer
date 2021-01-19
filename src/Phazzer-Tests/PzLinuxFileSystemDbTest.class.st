@@ -87,11 +87,12 @@ PzLinuxFileSystemDbTest >> testMethodFinished [
 { #category : #tests }
 PzLinuxFileSystemDbTest >> testMethodInstall [
 	| fakeTest |
-	fakeTest := 'test1 1+1'.
+	
+	[fakeTest := 'test1 1+1'.
 	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
 	db fetchTests: 10.
 	self
-		denyEmpty: (db getAllState: PzLinuxFileSystemDb stateForInstalled)
+		denyEmpty: (db getAllState: PzLinuxFileSystemDb stateForInstalled)]
 ]
 
 { #category : #tests }
