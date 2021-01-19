@@ -201,7 +201,7 @@ Phazzer >> removeFinishedTests [
 				buildFinalTestClassWith: {(l at: #testMethod)}
 				using: (self class environment at: (l at: #baseClass) asSymbol).
 			db flagAsProcessed: (l at: db idColumn) ].
-	db flagAllInstalledAsCreated.
+	"db flagAllInstalledAsCreated."
 	self flag: #todo	"dont create new class for each test method. pack it in classes"
 ]
 
@@ -319,27 +319,28 @@ Phazzer >> sandboxStart: priority OnFinish: aBlock [
 	config headless
 		ifTrue: [ args addFirst: '--headless' ].
 	args asString traceCr.
+	"redirectStdout;
+		redirectStderr;"
 	process := OSSUnixSubprocess new
 		terminateOnShutdown;
 		command: FileLocator vmBinary pathString;
 		arguments: args.
-		process 
+	process
 		runAndWaitPollingEvery: (Delay forMilliseconds: 1000)
-			doing: [ :theProcess :outStream :errStream | 
-			Stdio stdout
-				nextPutAll: 'tick';
-				lf.
-			self halt.
-			theProcess exitStatus ifNotNil: [ self halt ].
+		doing: [ :theProcess :outStream :errStream | 
+			"outStream atEnd
+				ifFalse: [ VTermOutputDriver stdout
+						blue;
+						<< outStream upToEnd;
+						clear ].
+			errStream atEnd
+				ifFalse: [ VTermOutputDriver stdout
+						red;
+						<< errStream upToEnd;
+						clear ]."
 			self requiresToStopSandbox
-				ifTrue: [ self halt.
-					theProcess sigterm ] ]
-			onExitDo: [ :theProcess :outStream :errStream | 
-				Stdio stdout
-					nextPutAll: 'toc';
-					lf.
-				self halt.
-				aBlock value ]
+				ifTrue: [ theProcess isComplete ifFalse: [theProcess sigterm] ] ]
+		onExitDo: [ :theProcess :outStream :errStream | aBlock value ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -421,9 +422,4 @@ Phazzer >> stashTestmethod: sourceCodes base: class [
 { #category : #accessing }
 Phazzer >> tools [
 	^ PzTools new
-]
-
-{ #category : #'as yet unclassified' }
-Phazzer >> writePIDtoGlobals [
-	db writePID: OSProcess thisOSProcess pid
 ]
