@@ -7,7 +7,9 @@ Class {
 		'freezeTimeOut',
 		'sandbox',
 		'dbName',
-		'headless'
+		'headless',
+		'iterations',
+		'maxPerAmplifier'
 	],
 	#category : #Phazzer
 }
@@ -70,6 +72,8 @@ PzConfig >> defaultValues: key [
 	(#sandbox -> true).
 	(#dbName -> 'phazzer').
 	(#headless -> false).
+	(#iterations -> 3).
+	(#maxPerAmplifier -> 10).
 	(#debug -> true)} asDictionary at: key
 ]
 
@@ -91,6 +95,26 @@ PzConfig >> headless [
 { #category : #accessing }
 PzConfig >> headless: anObject [
 	headless := anObject
+]
+
+{ #category : #accessing }
+PzConfig >> iterations [
+	^ iterations ifNil: [ self defaultValues: #iterations ]
+]
+
+{ #category : #accessing }
+PzConfig >> iterations: anObject [
+	iterations := anObject
+]
+
+{ #category : #accessing }
+PzConfig >> maxPerAmplifier [
+	^ maxPerAmplifier  ifNil: [ self defaultValues: #maxPerAmplifier ]
+]
+
+{ #category : #accessing }
+PzConfig >> maxPerAmplifier: anObject [
+	maxPerAmplifier := anObject
 ]
 
 { #category : #accessing }

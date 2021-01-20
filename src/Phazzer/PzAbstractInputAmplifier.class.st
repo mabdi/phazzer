@@ -5,7 +5,8 @@ Class {
 		'config',
 		'testMethod',
 		'aMethodAST',
-		'helperMethods'
+		'helperMethods',
+		'profile'
 	],
 	#category : #Phazzer
 }
@@ -57,6 +58,16 @@ PzAbstractInputAmplifier >> inputAmplify: aTestMethod [
 { #category : #'as yet unclassified' }
 PzAbstractInputAmplifier >> namingPrefix [
 	^ self class name
+]
+
+{ #category : #accessing }
+PzAbstractInputAmplifier >> profile [
+	^ profile
+]
+
+{ #category : #accessing }
+PzAbstractInputAmplifier >> profile: anObject [
+	profile := anObject
 ]
 
 { #category : #'change set' }

@@ -85,12 +85,15 @@ Phazzer >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> inputAmplify: aTestMethod selector: selector [
-	| res |
+Phazzer >> inputAmplify: aTestMethod profile: profile selector: selector [
+	| res tmp |
 	res := OrderedCollection new.
-	config amps
-		do:
-			[ :amp | res addAll: ((amp initializeWith: config) inputAmplify: aTestMethod) ]
+	(1 to: config iterations)
+		do: [ :gen | 
+			config amps
+				do: [ :amp | 
+					tmp := (amp initializeWith: config) profile: profile; inputAmplify: aTestMethod.
+					res addAll: (self reduceInputsForAmplifier: tmp) ] ]
 		displayingProgress: 'Input Amplifying: ' , selector.
 	^ res
 ]
@@ -180,10 +183,16 @@ Phazzer >> processTestClass: aTestClass [
 
 { #category : #'as yet unclassified' }
 Phazzer >> processTestMethod: aTestMethod [
-	| t ts |
+	| profile t ts |
+	profile := PzTypeProfiler new runOn: aTestMethod.
 	t := self removeAssertions: aTestMethod.
-	ts := self inputAmplify: t selector: aTestMethod selector.
+	ts := self inputAmplify: t profile: profile selector: aTestMethod selector.
 	self stashTestmethod: ts base: aTestMethod methodClass
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> reduceInputsForAmplifier: tmp [
+	^ tmp shuffle takeFirst: config maxPerAmplifier
 ]
 
 { #category : #'as yet unclassified' }

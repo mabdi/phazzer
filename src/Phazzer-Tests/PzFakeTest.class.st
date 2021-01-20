@@ -23,6 +23,6 @@ PzFakeTest >> testFakeFreeze [
 	| x v |
 	x := PzFake new.
 	v := 2 + 3.
-	x fakeFreeze: true.
+	x fakeFreeze: false.
 	self assert: v equals: 5
 ]

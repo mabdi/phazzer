@@ -14,6 +14,18 @@ PhazzerTest class >> defaultTimeLimit [
 ]
 
 { #category : #running }
+PhazzerTest >> myTearDown [
+	" Because I don't like this code to be run in the sandbox"
+	| finalP |
+	finalP := PzTools new defaultFinalPackage asPackage.
+	finalP classes
+		do: [ :x | 
+			x superclass = target
+				ifTrue: [ x removeFromSystem ] ].
+	(Phazzer dbClass named: self class name) purgeDb
+]
+
+{ #category : #running }
 PhazzerTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 
@@ -28,17 +40,6 @@ PhazzerTest >> setUp [
 					x superclass = target
 						ifTrue: [ x removeFromSystem ] ] ].
 	PzTools new clearTempClasses
-]
-
-{ #category : #running }
-PhazzerTest >> tearDown [
-	| finalP |
-	finalP := PzTools new defaultFinalPackage asPackage.
-	finalP classes
-		do: [ :x | 
-			x superclass = target
-				ifTrue: [ x removeFromSystem ] ].
-	(Phazzer dbClass named: self class name) purgeDb.
 ]
 
 { #category : #tests }
@@ -68,7 +69,8 @@ PhazzerTest >> testSandboxedCrash [
 		assert:
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
-	self deny: pz db anyUnFinishedLeft
+	self deny: pz db anyUnFinishedLeft.
+	self myTearDown 
 ]
 
 { #category : #tests }
@@ -97,5 +99,6 @@ PhazzerTest >> testSandboxedFreeze [
 		assert:
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
-	self deny: pz db anyUnFinishedLeft
+	self deny: pz db anyUnFinishedLeft.
+	self myTearDown 
 ]
