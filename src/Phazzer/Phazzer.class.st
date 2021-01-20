@@ -273,14 +273,15 @@ Phazzer >> runSandboxedWithPriority: priority [
 	master_image := FileLocator image pathString.
 	self sandboxInit.
 	FileLocator image pathString = master_image
-		ifTrue: [ "self
+		ifFalse: [ PzContinueInSandbox new signal ].
+	"self
 				startSandboxAndWatchPriority: priority
 				OnFinish: (self sandboxOnFinishOrCrash: priority)"
-				self
-				sandboxStart: priority
-				OnFinish: (self sandboxOnFinishOrCrash: priority) ].
-	FileLocator image pathString = sandbox_image
-		ifTrue: [ PzContinueInSandbox new signal ]
+	self
+		sandboxStart: priority
+		OnFinish: (self sandboxOnFinishOrCrash: priority)
+	"FileLocator image pathString = sandbox_image
+		ifTrue: [  ]"
 ]
 
 { #category : #'as yet unclassified' }
@@ -308,8 +309,8 @@ Phazzer >> sandboxOnFinishOrCrash: priority [
 { #category : #'as yet unclassified' }
 Phazzer >> sandboxStart: priority OnFinish: aBlock [
 	| args |
-	"headless := '--headless'."
 	'Sandbox started' traceCr.
+	db resetLastUpdate.
 	args := OrderedCollection new.
 	args
 		addAll:
@@ -319,8 +320,6 @@ Phazzer >> sandboxStart: priority OnFinish: aBlock [
 	config headless
 		ifTrue: [ args addFirst: '--headless' ].
 	args asString traceCr.
-	"redirectStdout;
-		redirectStderr;"
 	process := OSSUnixSubprocess new
 		terminateOnShutdown;
 		command: FileLocator vmBinary pathString;
@@ -328,19 +327,17 @@ Phazzer >> sandboxStart: priority OnFinish: aBlock [
 	process
 		runAndWaitPollingEvery: (Delay forMilliseconds: 1000)
 		doing: [ :theProcess :outStream :errStream | 
-			"outStream atEnd
-				ifFalse: [ VTermOutputDriver stdout
-						blue;
-						<< outStream upToEnd;
-						clear ].
-			errStream atEnd
-				ifFalse: [ VTermOutputDriver stdout
-						red;
-						<< errStream upToEnd;
-						clear ]."
 			self requiresToStopSandbox
-				ifTrue: [ theProcess isComplete ifFalse: [theProcess sigterm] ] ]
-		onExitDo: [ :theProcess :outStream :errStream | aBlock value ]
+				ifTrue: [ theProcess isComplete
+						ifFalse: [ Stdio stdout
+								<< 'Phazzer SIGTERM';
+								flush.
+							theProcess sigterm ] ] ]
+		onExitDo: [ :theProcess :outStream :errStream | 
+			Stdio stdout
+				<< 'Phazzer OnExit:';
+				flush.
+			aBlock value ]
 ]
 
 { #category : #'as yet unclassified' }

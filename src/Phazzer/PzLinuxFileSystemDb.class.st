@@ -187,8 +187,11 @@ PzLinuxFileSystemDb >> lineAsObjectFile: name state: state [
 
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> logAnUpdate [
-	(FileLocator imageDirectory / dbName / 'globals' / 'lastUpdate.conf')
-		writeStream
+	| file |
+	file := (FileLocator imageDirectory / dbName / 'globals' / 'lastUpdate.conf').
+	file exists
+		ifTrue: [ file delete ].
+		file writeStream
 		nextPutAll: DateAndTime now asUnixTime asString;
 		close
 ]
@@ -247,9 +250,12 @@ PzLinuxFileSystemDb >> readFile: name state: state [
 
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> resetLastUpdate [
-	
-	(FileLocator imageDirectory / dbName / 'globals' / 'lastUpdate.conf')
-		writeStream
+	| file |
+	file := (FileLocator imageDirectory / dbName / 'globals'
+		/ 'lastUpdate.conf').
+		file exists
+		ifTrue: [ file delete ].
+	file writeStream
 		nextPutAll: '0';
 		close
 ]
@@ -266,7 +272,12 @@ PzLinuxFileSystemDb >> system: aString [
 
 { #category : #'private - uffi' }
 PzLinuxFileSystemDb >> writeFile: name content: aString [
-	(FileLocator imageDirectory / dbName / 'tests' / self class stateForCreated  / name) writeStream
+	| file |
+	file := FileLocator imageDirectory / dbName / 'tests'
+		/ self class stateForCreated / name.
+	file exists
+				ifTrue: [ file delete ].
+	file writeStream
 		nextPutAll: aString;
 		close
 ]
@@ -274,7 +285,7 @@ PzLinuxFileSystemDb >> writeFile: name content: aString [
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> writePID: pid [
 	(FileLocator imageDirectory / dbName / 'globals' / 'pid.conf')
-		writeStream
+		ensureDelete writeStream
 		nextPutAll: pid asString;
 		close
 ]

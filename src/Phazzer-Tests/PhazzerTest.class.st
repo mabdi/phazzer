@@ -32,12 +32,13 @@ PhazzerTest >> setUp [
 
 { #category : #running }
 PhazzerTest >> tearDown [
-	 | finalP |
+	| finalP |
 	finalP := PzTools new defaultFinalPackage asPackage.
 	finalP classes
 		do: [ :x | 
 			x superclass = target
-				ifTrue: [ x removeFromSystem ] ] 
+				ifTrue: [ x removeFromSystem ] ].
+	(Phazzer dbClass named: self class name) purgeDb.
 ]
 
 { #category : #tests }
@@ -53,12 +54,11 @@ PhazzerTest >> testSandboxedCrash [
 			{PzDspotLiteralInputAmplifier.
 			PzDuplicateInputAmplifier}.
 	"cnf sandboxSharedFile: 'faketest-sandbox-done-tests.txt'."
-	(Phazzer dbClass named: cnf dbName)
-		purgeDb;
-		initDb.
 	pz := Phazzer new.
 	pz config: cnf.
-	pz phazzMethod: target >> #testFakeCrash.
+	[ pz phazzMethod: target >> #testFakeCrash ]
+		on: PzContinueInSandbox
+		do: [ ^ self ].
 	self assertEmpty: tools defaultTempPackage asPackage classes.
 	finalP := tools defaultFinalPackage
 		asPackageIfAbsent: [ self deny: true ].
@@ -68,8 +68,7 @@ PhazzerTest >> testSandboxedCrash [
 		assert:
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
-	self deny: pz db anyUnFinishedLeft.
-	(Phazzer dbClass named: cnf dbName) purgeDb
+	self deny: pz db anyUnFinishedLeft
 ]
 
 { #category : #tests }
@@ -84,13 +83,11 @@ PhazzerTest >> testSandboxedFreeze [
 	cnf freezeTimeOut: 5.
 	cnf dbName: self class name.
 	cnf headless: false.
-	(Phazzer dbClass named: cnf dbName)
-		purgeDb;
-		initDb.
 	pz := Phazzer new.
-	pz
-		config: cnf;
-		phazzMethod: target >> #testFakeFreeze.
+	pz config: cnf.
+	[ pz phazzMethod: target >> #testFakeFreeze ]
+		on: PzContinueInSandbox
+		do: [ ^ self ].
 	self assertEmpty: tools defaultTempPackage asPackage classes.
 	finalP := tools defaultFinalPackage
 		asPackageIfAbsent: [ self deny: true ].
@@ -100,6 +97,5 @@ PhazzerTest >> testSandboxedFreeze [
 		assert:
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
-	self deny: pz db anyUnFinishedLeft.
-	(Phazzer dbClass  named: cnf dbName) purgeDb
+	self deny: pz db anyUnFinishedLeft
 ]

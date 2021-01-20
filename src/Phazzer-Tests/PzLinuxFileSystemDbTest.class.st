@@ -71,6 +71,18 @@ PzLinuxFileSystemDbTest >> testMethodAdd [
 ]
 
 { #category : #tests }
+PzLinuxFileSystemDbTest >> testMethodAdd2 [
+	| fakeTest tests |
+	fakeTest := 'test1 1+1'.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
+	self denyEmpty: (db getAllState: PzLinuxFileSystemDb stateForCreated).
+	fakeTest := 'test1 1'.
+	db insertTestmethod: fakeTest selector: #test1 base: PzFakeTest.
+	tests := db fetchTests: 1.
+	self assert: (tests first at: #testMethod) equals: fakeTest
+]
+
+{ #category : #tests }
 PzLinuxFileSystemDbTest >> testMethodFinished [
 	| row c t fakeTest |
 	fakeTest := 'test1 1+1'.
@@ -119,4 +131,9 @@ PzLinuxFileSystemDbTest >> testMethodStart [
 	db logTestStart: t.
 	self
 		denyEmpty: (db getAllState: PzLinuxFileSystemDb stateForStarted)
+]
+
+{ #category : #test }
+PzLinuxFileSystemDbTest >> testWriteFileContent [
+	
 ]
