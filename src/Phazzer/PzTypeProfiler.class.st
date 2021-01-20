@@ -13,6 +13,11 @@ PzTypeProfiler class >> instanceVariablesKey [
 	^ #instanceVariables
 ]
 
+{ #category : #accessing }
+PzTypeProfiler >> at: key [ 
+	^ self variablesTypes at: key 
+]
+
 { #category : #'as yet unclassified' }
 PzTypeProfiler >> buildMetalink [
 	| l |

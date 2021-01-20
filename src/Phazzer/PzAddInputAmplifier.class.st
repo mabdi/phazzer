@@ -39,7 +39,7 @@ PzAddInputAmplifier >> applyMessageAdd: index [
 PzAddInputAmplifier >> applySetupMessage [
 	| nodes mClone theCode results |
 	nodes := OrderedCollection new.
-	(profile at: PzTypeProfiler instanceVariablesKey)
+	(profile variablesTypes at: PzTypeProfiler instanceVariablesKey)
 		do: [ :pair | 
 			| methods |
 			methods := pair value methods
@@ -74,7 +74,7 @@ PzAddInputAmplifier >> checkSafeToAddAfter: statement [
 	(self isVariableGlobal: msg receiver name)
 		ifTrue: [ ^ true ].
 	key := aMethodAST selector , ':' , msg receiver name.
-	^ profile includesKey: key
+	^ profile variablesTypes includesKey: key
 ]
 
 { #category : #removing }
@@ -125,7 +125,7 @@ PzAddInputAmplifier >> namingPrefix [
 { #category : #removing }
 PzAddInputAmplifier >> nodesFor: variableName [
 	| theType methods |
-	theType := profile
+	theType := profile variablesTypes
 		at: aMethodAST selector , ':' , variableName
 		ifAbsent: [ nil class ].
 	theType isMeta

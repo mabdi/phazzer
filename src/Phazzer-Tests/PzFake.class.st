@@ -5,6 +5,11 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+PzFake >> callMeBro [
+	^ 1	
+]
+
+{ #category : #'as yet unclassified' }
 PzFake >> fakeCrash: aBoolean [
 	| x |
 	
