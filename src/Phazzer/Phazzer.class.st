@@ -102,15 +102,24 @@ Phazzer >> initialize [
 
 { #category : #'as yet unclassified' }
 Phazzer >> inputAmplify: aTestMethod profile: profile selector: selector [
-	| res tmp |
+	| res tmp theV |
 	res := OrderedCollection new.
+	theV := OrderedCollection with: aTestMethod.
 	(1 to: config iterations)
 		do: [ :gen | 
-			config amps
-				do: [ :amp | 
-					tmp := (amp initializeWith: config) profile: profile; inputAmplify: aTestMethod.
-					res addAll: (self reduceInputsForAmplifier: tmp) ] ]
+			theV
+				do: [ :thisTestMethod | 
+					config amps
+						do: [ :amp | 
+							tmp := (amp initializeWith: config)
+								profile: profile;
+								inputAmplify: thisTestMethod.
+							tmp := (self reduceInputsForAmplifier: tmp).
+							theV removeAll.
+							theV addAll: tmp.
+							res addAll: tmp ] ] ]
 		displayingProgress: 'Input Amplifying: ' , selector.
+	res := theV.
 	^ res
 ]
 
@@ -279,6 +288,7 @@ Phazzer >> runIfAnyTestsLeft [
 
 { #category : #'as yet unclassified' }
 Phazzer >> runInSandbox [
+	Author fullName: 'PhazzerSandbox'.
 	[ (self installCount: 5000) > 0 ] whileTrue: [ self runAllInstalled ]
 ]
 
