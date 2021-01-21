@@ -283,6 +283,18 @@ PzLinuxFileSystemDb >> writeFile: name content: aString [
 ]
 
 { #category : #'as yet unclassified' }
+PzLinuxFileSystemDb >> writeGlobalKey: key value: val [
+	| file |
+	file := FileLocator imageDirectory / dbName / 'globals'
+		/ (key , '.conf').
+	file exists
+		ifTrue: [ file delete ].
+	file writeStream
+		nextPutAll: val asString;
+		close
+]
+
+{ #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> writePID: pid [
 	(FileLocator imageDirectory / dbName / 'globals' / 'pid.conf')
 		ensureDelete writeStream

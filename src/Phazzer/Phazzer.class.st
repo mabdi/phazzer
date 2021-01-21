@@ -23,8 +23,9 @@ Phazzer class >> amplifyAll [
 Phazzer class >> amplifyFile: file [
 	| pz lines |
 	pz := self new.
+	pz tic.
 	lines := file asFileReference contents lines.
-	(lines collect: #asPackage) 
+	(lines collect: #asPackage)
 		do: [ :p | pz processPackage: p ]
 		displayingProgress: [ :p | 'Amplification package: ' , p name ]
 ]
@@ -50,7 +51,8 @@ Phazzer class >> hackThePlanetFile: fileName [
 Phazzer class >> runAll [
 	| pz |
 	pz := self new.
-	pz run
+	pz run.
+	pz toc
 ]
 
 { #category : #'as yet unclassified' }
@@ -449,6 +451,16 @@ Phazzer >> stashTestmethod: sourceCodes base: class [
 		do: [ :sourceCode | 
 			selector := (self tools parsedMethodFrom: sourceCode) selector.
 			db insertTestmethod: sourceCode selector: selector base: class ]
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> tic [
+	self db writeGlobalKey: 'start' value: DateAndTime now asUnixTime
+]
+
+{ #category : #'as yet unclassified' }
+Phazzer >> toc [
+	self db writeGlobalKey: 'finish' value: DateAndTime now asUnixTime
 ]
 
 { #category : #accessing }
