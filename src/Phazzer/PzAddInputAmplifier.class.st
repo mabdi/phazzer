@@ -107,6 +107,7 @@ PzAddInputAmplifier >> isNotSafeToSelect: method [
 		ifTrue: [ ^ true ].
 	(method selector includesSubstring: ':')
 		ifTrue: [ ^ true ].
+	method isBinarySelector ifTrue: [ ^ true ].	
 	^ false
 ]
 
