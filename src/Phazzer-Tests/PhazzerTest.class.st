@@ -50,6 +50,7 @@ PhazzerTest >> testSandboxedCrash [
 	cnf dbName: self class name.
 	cnf headless: false.
 	cnf freezeTimeOut: 180.
+	cnf iterations: 1.
 	cnf
 		amps:
 			{PzDspotLiteralInputAmplifier.
@@ -70,7 +71,7 @@ PhazzerTest >> testSandboxedCrash [
 			(((res asOrderedCollection at: 1) methods at: 1) sourceCode
 				includesSubstring: 'true').
 	self deny: pz db anyUnFinishedLeft.
-	self myTearDown 
+	self myTearDown
 ]
 
 { #category : #tests }

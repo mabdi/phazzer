@@ -9,7 +9,7 @@ Class {
 		'dbName',
 		'headless',
 		'iterations',
-		'maxPerAmplifier'
+		'maxInputs'
 	],
 	#category : #Phazzer
 }
@@ -73,7 +73,7 @@ PzConfig >> defaultValues: key [
 	(#dbName -> 'phazzer').
 	(#headless -> false).
 	(#iterations -> 3).
-	(#maxPerAmplifier -> 10).
+	(#maxInputs -> 200).
 	(#debug -> true)} asDictionary at: key
 ]
 
@@ -108,13 +108,13 @@ PzConfig >> iterations: anObject [
 ]
 
 { #category : #accessing }
-PzConfig >> maxPerAmplifier [
-	^ maxPerAmplifier  ifNil: [ self defaultValues: #maxPerAmplifier ]
+PzConfig >> maxInputs [
+	^ maxInputs ifNil: [ self defaultValues: #maxInputs ]
 ]
 
 { #category : #accessing }
-PzConfig >> maxPerAmplifier: anObject [
-	maxPerAmplifier := anObject
+PzConfig >> maxInputs: anObject [
+	maxInputs := anObject
 ]
 
 { #category : #accessing }

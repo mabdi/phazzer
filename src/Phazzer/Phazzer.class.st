@@ -104,25 +104,27 @@ Phazzer >> initialize [
 
 { #category : #'as yet unclassified' }
 Phazzer >> inputAmplify: aTestMethod profile: profile selector: selector [
-	| res tmp theV |
-	res := OrderedCollection new.
-	theV := OrderedCollection with: aTestMethod.
+	| amplified newPopulation population |
+	amplified := OrderedCollection new.
+	population := OrderedCollection with: aTestMethod.
 	(1 to: config iterations)
-		do: [ :gen | 
-			theV
-				do: [ :thisTestMethod | 
-					config amps
-						do: [ :amp | 
-							tmp := (amp initializeWith: config)
-								profile: profile;
-								inputAmplify: thisTestMethod.
-							tmp := (self reduceInputsForAmplifier: tmp).
-							theV removeAll.
-							theV addAll: tmp.
-							res addAll: tmp ] ] ]
+		do: [ :generation | 
+			newPopulation := OrderedCollection new.
+			population
+				do: [ :individual | 
+					newPopulation
+						addAll:
+							(config amps
+								flatCollect: [ :amp | 
+									(amp initializeWith: config)
+										profile: profile;
+										inputAmplify: individual ]) ].
+			newPopulation := self reduceInputs: newPopulation.
+			amplified addAll: newPopulation.
+			population := newPopulation ]
 		displayingProgress: 'Input Amplifying: ' , selector.
-	res := theV.
-	^ res
+	
+	^ amplified
 ]
 
 { #category : #'as yet unclassified' }
@@ -218,8 +220,8 @@ Phazzer >> processTestMethod: aTestMethod [
 ]
 
 { #category : #'as yet unclassified' }
-Phazzer >> reduceInputsForAmplifier: tmp [
-	^ tmp shuffle takeFirst: config maxPerAmplifier
+Phazzer >> reduceInputs: tmp [
+	^ tmp shuffle takeFirst: config maxInputs
 ]
 
 { #category : #'as yet unclassified' }
