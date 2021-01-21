@@ -19,6 +19,16 @@ Phazzer class >> amplifyAll [
 		displayingProgress: [ :p | 'Amplification package: ' , p name ]
 ]
 
+{ #category : #structure }
+Phazzer class >> amplifyFile: file [
+	| pz lines |
+	pz := self new.
+	lines := file asFileReference contents lines.
+	(lines collect: #asPackage) 
+		do: [ :p | pz processPackage: p ]
+		displayingProgress: [ :p | 'Amplification package: ' , p name ]
+]
+
 { #category : #'as yet unclassified' }
 Phazzer class >> dbClass [
 	^ PzLinuxFileSystemDb
@@ -28,6 +38,12 @@ Phazzer class >> dbClass [
 Phazzer class >> hackThePlanet [
 	self amplifyAll.
 	self runAll 
+]
+
+{ #category : #structure }
+Phazzer class >> hackThePlanetFile: fileName [
+	self amplifyFile: fileName.
+	self runAll
 ]
 
 { #category : #structure }
@@ -174,7 +190,7 @@ Phazzer >> processPackage: package [
 { #category : #'as yet unclassified' }
 Phazzer >> processTestClass: aTestClass [
 	(db checkClassIsProcessed: aTestClass)
-		ifFalse: [ ^ self ].
+		ifTrue: [ ^ self ].
 	aTestClass allTestSelectors
 		do:
 			[ :selector | self processTestMethod: (aTestClass lookupSelector: selector) ]
