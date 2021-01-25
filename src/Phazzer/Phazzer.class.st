@@ -36,6 +36,17 @@ Phazzer class >> dbClass [
 ]
 
 { #category : #structure }
+Phazzer class >> getPackagesFromProject: projectName [
+	| repo pp |
+	repo := IceRepository registry
+		detect: [ :r | r name = projectName ]
+		ifNone: [ ^ #() ].
+	pp := (repo workingCopy packages select: [ :p | p isLoaded ])
+		collect: [ :p | RPackageOrganizer default packageNamed: p name ].
+	^ pp
+]
+
+{ #category : #structure }
 Phazzer class >> hackThePlanet [
 	self amplifyAll.
 	self runAll 
@@ -45,6 +56,19 @@ Phazzer class >> hackThePlanet [
 Phazzer class >> hackThePlanetFile: fileName [
 	self amplifyFile: fileName.
 	self runAll
+]
+
+{ #category : #structure }
+Phazzer class >> hackThePlanetProject: projectName [
+	| pp pz |
+	pp := self getPackagesFromProject: projectName.
+	pz := self new.
+	pz tic.
+	pp
+		do: [ :p | pz processPackage: p ]
+		displayingProgress: [ :p | 'Amplification package: ' , p name ].
+	pz run.
+	pz toc
 ]
 
 { #category : #structure }
