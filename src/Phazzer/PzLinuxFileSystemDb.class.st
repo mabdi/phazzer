@@ -188,10 +188,11 @@ PzLinuxFileSystemDb >> lineAsObjectFile: name state: state [
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> logAnUpdate [
 	| file |
-	file := (FileLocator imageDirectory / dbName / 'globals' / 'lastUpdate.conf').
-	file exists
-		ifTrue: [ file delete ].
-		file writeStream
+	file := FileLocator imageDirectory / dbName / 'globals'
+		/ 'lastUpdate.conf'.
+	"file exists
+		ifTrue: [ file delete ]."
+	file writeStream truncate ;
 		nextPutAll: DateAndTime now asUnixTime asString;
 		close
 ]
@@ -251,11 +252,11 @@ PzLinuxFileSystemDb >> readFile: name state: state [
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> resetLastUpdate [
 	| file |
-	file := (FileLocator imageDirectory / dbName / 'globals'
-		/ 'lastUpdate.conf').
-		file exists
-		ifTrue: [ file delete ].
-	file writeStream
+	file := FileLocator imageDirectory / dbName / 'globals'
+		/ 'lastUpdate.conf'.
+	"file exists
+		ifTrue: [ file delete ]."
+	file writeStream truncate;
 		nextPutAll: '0';
 		close
 ]
@@ -275,9 +276,9 @@ PzLinuxFileSystemDb >> writeFile: name content: aString [
 	| file |
 	file := FileLocator imageDirectory / dbName / 'tests'
 		/ self class stateForCreated / name.
-	file exists
-				ifTrue: [ file delete ].
-	file writeStream
+	"file exists
+		ifTrue: [ file delete ]."
+	file writeStream truncate;
 		nextPutAll: aString;
 		close
 ]
@@ -287,9 +288,9 @@ PzLinuxFileSystemDb >> writeGlobalKey: key value: val [
 	| file |
 	file := FileLocator imageDirectory / dbName / 'globals'
 		/ (key , '.conf').
-	file exists
-		ifTrue: [ file delete ].
-	file writeStream
+	"file exists
+		ifTrue: [ file delete ]."
+	file writeStream truncate;
 		nextPutAll: val asString;
 		close
 ]
@@ -297,7 +298,7 @@ PzLinuxFileSystemDb >> writeGlobalKey: key value: val [
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> writePID: pid [
 	(FileLocator imageDirectory / dbName / 'globals' / 'pid.conf')
-		ensureDelete writeStream
+		 writeStream ;truncate;
 		nextPutAll: pid asString;
 		close
 ]
