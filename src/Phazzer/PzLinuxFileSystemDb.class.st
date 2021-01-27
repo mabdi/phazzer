@@ -62,7 +62,7 @@ PzLinuxFileSystemDb >> checkClassIsProcessed: aTestClass [
 PzLinuxFileSystemDb >> fetchTests: aNumber [
 	| ls results |
 	ls := ((self lsState: self class stateForCreated)
-		takeFirst: aNumber asString) collect: #basename.
+		takeFirst: aNumber) collect: #basename.
 	results := ls
 		collect:
 			[ :line | self lineAsObjectFile: line state: self class stateForCreated ].
