@@ -32,17 +32,11 @@ PzLinuxFileSystemDb class >> stateForStarted [
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> anyUnFinishedLeft [
 	| ls |
-	ls := (self
-		system: 'ls ' , dbName , '/tests/' , self class stateForCreated)
-		.
+	ls := self lsState: self class stateForCreated.
 	ls ifNotEmpty: [ ^ true ].
-	ls := (self
-		system: 'ls ' , dbName , '/tests/' , self class stateForStarted)
-		.
+	ls := self lsState: self class stateForStarted.
 	ls ifNotEmpty: [ ^ true ].
-	ls := (self
-		system: 'ls ' , dbName , '/tests/' , self class stateForInstalled)
-		.
+	ls := self lsState: self class stateForInstalled.
 	ls ifNotEmpty: [ ^ true ].
 	^ false
 ]
@@ -51,32 +45,27 @@ PzLinuxFileSystemDb >> anyUnFinishedLeft [
 PzLinuxFileSystemDb >> checkClassIsProcessed: aTestClass [
 	| ls |
 	ls := self
-		system:
-			'ls ' , dbName , '/tests/' , self class stateForCreated , '/'
-				, aTestClass name , '*'.
+		lsState: self class stateForCreated
+		matching: aTestClass name , '*'.
 	ls ifNotEmpty: [ ^ true ].
 	ls := self
-		system:
-			'ls ' , dbName , '/tests/' , self class stateForFinished , '/'
-				, aTestClass name , '*'.
+		lsState: self class stateForFinished
+		matching: aTestClass name , '*'.
 	ls ifNotEmpty: [ ^ true ].
 	ls := self
-		system:
-			'ls ' , dbName , '/tests/' , self class stateForProcessed , '/'
-				, aTestClass name , '*'.
+		lsState: self class stateForProcessed matching: aTestClass name , '*'.
 	ls ifNotEmpty: [ ^ true ].
-	
 	^ false
 ]
 
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> fetchTests: aNumber [
 	| ls results |
-	ls := (self
-		system:
-			'ls ' , dbName , '/tests/' , self class stateForCreated , ' | head -'
-				, aNumber asString) lines.
-	results := ls collect: [ :line | self lineAsObjectFile: line state: self class stateForCreated  ].
+	ls := ((self lsState: self class stateForCreated)
+		takeFirst: aNumber asString) collect: #basename.
+	results := ls
+		collect:
+			[ :line | self lineAsObjectFile: line state: self class stateForCreated ].
 	^ results
 ]
 
@@ -105,12 +94,9 @@ PzLinuxFileSystemDb >> flagAsProcessed: rowId [
 { #category : #'as yet unclassified' }
 PzLinuxFileSystemDb >> getAllState: state [
 	| ls results |
-	ls := (self
-		system: 'ls ' , dbName , '/tests/' , state)
-		lines.
+	ls := (self lsState: state) collect: #basename.
 	results := ls
-		collect:
-			[ :line | self lineAsObjectFile: line state: state ].
+		collect: [ :line | self lineAsObjectFile: line state: state ].
 	^ results
 ]
 
@@ -219,6 +205,17 @@ PzLinuxFileSystemDb >> logTestStart: aTestCase [
 						nameForBase: aTestCase class superclass name
 						selector: aTestCase selector asString) , ' ' , dbName
 				, '/tests/' , self class stateForStarted , '/'
+]
+
+{ #category : #'as yet unclassified' }
+PzLinuxFileSystemDb >> lsState: state [
+	^ (FileLocator imageDirectory / dbName / 'tests' / state) files
+]
+
+{ #category : #'as yet unclassified' }
+PzLinuxFileSystemDb >> lsState: state matching: pattern [
+	^ FileLocator imageDirectory / dbName / 'tests' / state
+		filesMatching: pattern
 ]
 
 { #category : #'as yet unclassified' }
