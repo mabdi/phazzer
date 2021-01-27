@@ -74,7 +74,7 @@ PzConfig >> defaultValues: key [
 	(#headless -> false).
 	(#iterations -> 3).
 	(#maxInputs -> 200).
-	(#debug -> true)} asDictionary at: key
+	(#debug -> false)} asDictionary at: key
 ]
 
 { #category : #accessing }
