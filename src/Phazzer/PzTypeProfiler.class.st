@@ -100,8 +100,11 @@ PzTypeProfiler >> runTestClass: aCompiledMethod [
 
 { #category : #'as yet unclassified' }
 PzTypeProfiler >> uninstallMetaLinksOnMethod: method [
-	links do: #uninstall.
-			method recompile.
+	"links do: #uninstall."
+
+	"genPushLiteralVar: index index 258 is out of range 0 to 255"
+	links removeAll.
+	method recompile
 	"method ast allChildren
 		select: #isVariable
 		thenDo: [ :node | 
