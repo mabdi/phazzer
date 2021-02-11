@@ -5,11 +5,6 @@ Class {
 }
 
 { #category : #private }
-PzContinueInSandbox >> defaultAction [ 
-	^ self
-]
-
-{ #category : #private }
 PzContinueInSandbox >> isResumable [ 
 	^ false
 ]
