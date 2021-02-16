@@ -69,18 +69,16 @@ PzTools >> buildTestClassWith: aCollection using: testClass [
 	tempClass class pzCompile: 'testEvents ^ testEvents'.
 	tempClass class
 		pzCompile: 'testEvents: aTestEvents testEvents := aTestEvents'.
-	
 	tempClass
 		pzCompile:
 			'setUp
-	super setUp.
-	self class testEvents logTestStart: self '.
+	self class testEvents logTestStart: self.
+	super setUp. '.
 	tempClass
 		pzCompile:
 			'tearDown
-	super tearDown.
-	self class testEvents logTestFinished: self'.
-	
+	self class testEvents logTestFinished: self.
+	super tearDown.'.
 	aCollection
 		do: [ :item | 
 			| ast |
